@@ -3,7 +3,8 @@ package ph.appbuilders.offlinehealth.domain
 /**
  * Pure filter run on every model reply before any of it reaches the screen (ARCHITECTURE "Send pipeline" step 4).
  * Strict mode (owner, Oct 10): no medicine names, no medicine forms, no doses, no diagnoses, no phone numbers,
- * and no downplaying while a danger warning is shown. A rejected reply is hidden; the card and dangers stay.
+ * no emergency number but 911, no known first-aid myths (ice/butter/toothpaste on burns, "no water"), and no
+ * downplaying while a danger warning is shown. A rejected reply is hidden; the card and dangers stay.
  */
 object Guardrail {
     const val MAX_CHARS = 1200
@@ -16,10 +17,22 @@ object Guardrail {
             GuardrailTerms.drug.containsMatchIn(text) -> false
             GuardrailTerms.diagnosis.containsMatchIn(text) -> false
             GuardrailTerms.phone.containsMatchIn(text) -> false
+            GuardrailTerms.otherEmergencyNumber.containsMatchIn(text) -> false
+            GuardrailTerms.noWater.containsMatchIn(text) -> false
+            GuardrailTerms.myth.findAll(text).any { !negated(text, it.range.first) } -> false
             dangerShown && GuardrailTerms.downplay.containsMatchIn(text) -> false
             else -> true
         }
     }
+
+    /** "Don't put ice on it" is the right advice: a myth only counts when no negation comes just before it. */
+    private fun negated(text: String, at: Int): Boolean {
+        val sentenceStart = text.lastIndexOfAny(charArrayOf('.', '!', '?', '\n'), startIndex = at - 1) + 1
+        val window = text.substring(maxOf(sentenceStart, at - NEGATION_WINDOW), at)
+        return GuardrailTerms.negation.containsMatchIn(window)
+    }
+
+    private const val NEGATION_WINDOW = 40
 }
 
 /**
@@ -63,6 +76,21 @@ internal object GuardrailTerms {
 
     /** Seven or more digits, optionally split by single spaces or hyphens. 911 stays allowed. */
     val phone = Regex("""\+?\d(?:[\s-]?\d){6,}""")
+
+    /** First-aid myths the stock model was seen to recommend. Allowed when negated ("ayaw butangi hin yelo"). */
+    val myth = words(
+        "ice", "yelo", "ice packs?", "butter", "mantekilya", "toothpaste", "egg whites?",
+        "(?:pop|burst|break|prick)\\s+(?:the\\s+|a\\s+)?blisters?",
+    )
+
+    /** Negations in the four languages, looked for just before a myth. */
+    val negation = words("don'?t", "do not", "never", "avoid", "not", "no", "ayaw", "dili", "diri", "huwag", "wag", "hindi")
+
+    /** Telling people not to use water on a wound or burn: the opposite of the first step. Spans "e.g." periods. */
+    val noWater = Regex("""(?:do not|don'?t|avoid|never)\s+(?:apply|use|put|pour|run|rinse)\b[^!?\n]{0,40}\bwater\b""")
+
+    /** Emergency numbers from other countries, or the old 117 hotline. 911 is the Philippine number. */
+    val otherEmergencyNumber = Regex("""\b(?:999|112|111|000|117|118|119)\b""")
 
     val downplay = Regex(
         listOf(

@@ -65,6 +65,30 @@ class GuardrailTest {
         assertFalse(allows("It's not serious.", dangerShown = true))
     }
 
+    // Seen on the emulator (Oct 10, stock Sailor2): ice on a burn, "no water", UK/US emergency numbers.
+    @Test fun firstAidMythsAreBlocked() {
+        assertFalse(allows("Ice Pack: Apply a cold pack (e.g., ice) to the burned area for 10-15 minutes."))
+        assertFalse(allows("Butangi hin yelo an paso."))
+        assertFalse(allows("Put toothpaste on the burn."))
+        assertFalse(allows("Rub butter on it to soothe the skin."))
+        assertFalse(allows("Pop the blister so it drains."))
+        assertFalse(allows("Avoid Moisture: Do not apply any moisture (e.g., water, lotion) to the wound."))
+    }
+
+    @Test fun warningsAgainstMythsAreAllowed() {
+        assertTrue(allows("Cool it under running water. Don't put ice or toothpaste on it."))
+        assertTrue(allows("Ayaw butangi hin yelo o toothpaste."))
+        assertTrue(allows("Huwag lagyan ng yelo ang paso."))
+        assertTrue(allows("Never use butter, and do not pop the blisters."))
+    }
+
+    @Test fun onlyThePhilippineEmergencyNumberIsAllowed() {
+        assertFalse(allows("Call emergency services (112 in the UK, 999 in the UK, 111 in the USA)."))
+        assertFalse(allows("Dial 117 right away."))
+        assertTrue(allows("Call 911 now."))
+        assertTrue(allows("Give fluids for 2 days and rest 8 hours."))
+    }
+
     @Test fun emptyAndOverlongAreBlocked() {
         assertFalse(allows(""))
         assertFalse(allows("   \n "))
