@@ -29,6 +29,7 @@ measurements or Waray speaker evaluation contradict it, and record the changed e
 | **Store birth month, compute the group** | A stored "baby" goes stale and would apply the wrong danger rules | Chosen |
 | **Demo AI via Ollama on the laptop, over USB (debug builds only)** | Trained GGUF not delivered yet and on-phone llama.cpp too risky before the Oct 10 freeze. Owner, Oct 10 ~01:45 | **Chosen for the demo**; release builds unchanged |
 | **Guardrail strict: no medicine names, forms, or doses** | PRD metric (0 reach the screen). Owner, Oct 10 ~01:45, after the trained model was taught OTC names | Chosen; revisit after the trained-model swap |
+| **Demo library: 3 topics with written cards; keyword triage routes only to them** | No placeholder may reach the demo screen (owner, Oct 10). Anything else gets the designed "not covered" answer | Chosen for the demo; the other 4 topics need content |
 
 ## Details
 
@@ -113,3 +114,9 @@ measurements or Waray speaker evaluation contradict it, and record the changed e
   Allowing OTC names without doses is an owner decision to make after measuring that.
 - **Known limit:** the guardrail can't catch wrong advice that uses only ordinary words. The stock model told a
   Waray user to put a burned hand in hot water. The card above every reply is the safety net.
+- **Decision 4, demo library and triage (Oct 10, ~02:10):** only child diarrhea, fever, and burn have written
+  cards (`content/DemoCards.kt`), so triage (`domain/Triage.kt`, glossary in Kotlin until `glossary.json`) routes
+  only to them, and Topics lists only them. Every other message gets the "not covered" answer, which already lists
+  what the app can help with. Danger signs are detected in all four languages whatever the app language.
+  "Dugo"/"blood" counts as blood in the stool only around diarrhea words. **Unreviewed:** the Waray card text and
+  the new Bisaya burn/fever text are AI-drafted; each card's source line says so. Tagalog shows English cards.

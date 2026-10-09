@@ -84,6 +84,13 @@ facts above stay true and are kept as a record. Gemma 4 E2B also exists as GGUF,
   granted in `src/debug/` only; the release APK has no INTERNET permission (checked with `aapt dump permissions`).
 - Sailor2 writes markdown (`**`, `###`); `ReplyText.plain` strips it because the UI shows plain text.
 
+- With real triage + demo cards (emulator, Waray): a burn message shows the Waray burn card, then the model reply;
+  "hilanat ngan kumbulsyon" shows the red banner with the seizure message and the fever card; "ngipon" (toothache)
+  shows "not covered" with exactly 3 topics. No placeholder text appears.
+- The stock model's burn reply told the user to press the burned hand. It passed the guardrail (no blocked words):
+  wrong advice in plain words is beyond a keyword guardrail; the card above it is the safety net.
+- Danger banner headline and other UI copy are English for Waray (no Waray UI strings yet; only the card is Waray).
+
 ### Still unverified
 - The trained `waray-chat-v2-q8_0.gguf` in Ollama (file not delivered), and how many of its replies the strict
   guardrail withholds.

@@ -7,13 +7,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import ph.appbuilders.offlinehealth.BuildConfig
 import ph.appbuilders.offlinehealth.content.ContentSource
+import ph.appbuilders.offlinehealth.content.DemoContentSource
 import ph.appbuilders.offlinehealth.domain.model.SetupState
 import ph.appbuilders.offlinehealth.fakes.FakeChatService
-import ph.appbuilders.offlinehealth.fakes.FakeContentSource
 import ph.appbuilders.offlinehealth.fakes.FakeLanguageSettings
 import ph.appbuilders.offlinehealth.fakes.FakeModelSetupService
 import ph.appbuilders.offlinehealth.fakes.FakeTriage
 import ph.appbuilders.offlinehealth.features.chat.ChatService
+import ph.appbuilders.offlinehealth.features.chat.InstantResult
 import ph.appbuilders.offlinehealth.features.chat.components.MenuAction
 import ph.appbuilders.offlinehealth.features.modelsetup.ModelSetupService
 import ph.appbuilders.offlinehealth.lib.llm.OllamaChatService
@@ -31,24 +32,26 @@ class AppContainer(context: Context) {
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-    val content: ContentSource = FakeContentSource()
+    // The three topics with written cards; no placeholder card can reach the screen.
+    private val demoContent = DemoContentSource()
+    val content: ContentSource = demoContent
 
     /** Starts with no language, so every launch of the fake shows the first-run picker and setup. */
     val languageSettings: LanguageSettings = FakeLanguageSettings(initial = null)
 
-    private val triage = FakeTriage(content)
+    private val instantResult = InstantResult(demoContent)
 
     private val ollamaChat: OllamaChatService? =
         if (BuildConfig.USE_OLLAMA) {
             OllamaChatService(
                 client = OllamaClient(BuildConfig.OLLAMA_URL, BuildConfig.OLLAMA_MODEL),
-                triage = { text, language -> triage.script(text, language).result },
+                triage = instantResult::of,
                 scope = appScope,
             )
         } else {
             null
         }
-    private val fakeChat = FakeChatService(triage, appScope)
+    private val fakeChat = FakeChatService(FakeTriage(content), appScope)
     val chatService: ChatService = ollamaChat ?: fakeChat
 
     // With Ollama the model already lives on the laptop, so setup starts Done (no fake download on stage).
