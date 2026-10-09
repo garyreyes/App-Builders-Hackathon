@@ -7,7 +7,8 @@
 | 6 GB RAM phone as first target | User's representative midrange phone | Chosen; performance untested |
 | Text chat before speech input | Lets each model's errors be measured separately | Chosen |
 | Sailor2-1B-Chat as baseline | Small model with published Waray coverage and GGUF quantizations | Baseline measured on desktop GPU (2026-10-09): 21/25 failures across 25 held-out prompts; heavy factual hallucination and vocabulary confusion |
-| LoRA on reviewed Waray chat pairs | Adapts chat behavior without training a new foundation model | Active prototype; 10-step pilot executed on RTX 4050 (2,165 MiB peak VRAM, loss 2.266, 6/25 pass vs 4/25 baseline). Full training and GGUF export pending |
+| LoRA on reviewed Waray chat pairs | Adapts chat behavior without training a new foundation model | Active prototype; Run 04 used 265 train rows and rank 16/alpha 32 on the RTX 4050, scored 12/25 model-only, and was exported as a local `Q8_0` GGUF. Native-speaker and phone testing pending. |
+| Offline fact and policy layer before model fallback | Run 04's 1B LoRA model still confused stable geography and vocabulary and produced unsafe or irrelevant details | Desktop reference adopted 2026-10-10: source-grounded `training/offline_knowledge.py` scored 24/25 with the model as fallback in an AI self-review. This is a combined assistant result on known question categories; Android port, fresh benchmark, native review, and clinical review pending. |
 | AI review for an experimental prototype | No fluent Waray reviewer is currently available; the owner asked for an AI-led path on 2026-10-09 | Active prototype; reviewing model and method recorded in data and reviews; native-speaker validation still required |
 | Separate speech-to-text model | Text chat training cannot learn audio transcription | Planned |
 | Keep model weights and raw/private data out of Git | Repository stays reviewable and respects sharing limits | Active |

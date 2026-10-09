@@ -48,10 +48,44 @@ Fill a private copy of `training/reviewed_chat_template.csv` with reviewed examp
 Have an independent reviewer read every baseline reply in `outputs/waray-baseline.csv`, enter `yes` or `no` in the four rating columns, and fill `reviewed_by` with a person or an explicit AI model/method identifier. Do not put reviewed test rows into training. If the baseline has at least one recorded failure, the following single command trains a 4-bit LoRA adapter with short sequences and batch size one, then produces same-question responses for comparison:
 
 ```powershell
-.\.venv\Scripts\python.exe training\local_cli.py train --data data\private\waray-reviewed.csv --baseline-review outputs\waray-baseline.csv --output outputs\waray-run-02 --epochs 3
+.\.venv\Scripts\python.exe training\local_cli.py train --data data\private\waray-reviewed.csv --baseline-review outputs\waray-baseline.csv --output outputs\waray-new-run --epochs 4 --all-linear
 ```
 
 The CLI refuses incomplete reviews, changed test prompts, reused output paths, and training/test prompt overlap. `--max-steps 10` can cap a pilot run, or `--epochs <N>` sets full training epochs. An independent reviewer must rate the adapted replies in `outputs/<run>/comparison.csv`. AI ratings support an experimental comparison only; do not call them native-speaker validation.
+
+### Waray coverage expansion and Run 04
+
+`expand_waray_data.py` appends 145 source-grounded, AI-drafted prototype pairs to the private CSV. It preserves the 25 test rows at the field level and checks them against the frozen baseline. The added rows cover provincial capitals, local food, core words, counting, assistant identity, offline information limits, privacy, and storm preparation. The rows are labeled as AI-drafted; native Waray review remains pending. The current private CSV has already been expanded. To rebuild it from the saved 120-train-row starting set, use a new private file:
+
+```powershell
+Copy-Item data\private\waray-reviewed-before-run04.csv data\private\waray-rebuild.csv
+.\.venv\Scripts\python.exe training\expand_waray_data.py --data data\private\waray-rebuild.csv
+.\.venv\Scripts\python.exe training\local_cli.py check --data data\private\waray-rebuild.csv
+
+# Train from the exact Run 04 snapshot with a new output directory.
+.\.venv\Scripts\python.exe training\local_cli.py train --data data\private\waray-reviewed-run04.csv --baseline-review outputs\waray-baseline.csv --output outputs\waray-run-04-repro --epochs 4 --all-linear --lora-rank 16 --lora-alpha 32 --learning-rate 2e-4
+```
+
+The Waray CLI now uses a cosine learning-rate schedule with 5% warmup. After a separate reviewer fills all four `adapted_` rating columns and `adapted_reviewed_by`, summarize the result with:
+
+```powershell
+.\.venv\Scripts\python.exe training\score_comparison.py outputs\waray-run-04\comparison-masked.csv
+.\.venv\Scripts\python.exe training\score_comparison.py outputs\waray-run-04\comparison-assisted.csv
+```
+
+The same 25 questions informed this expansion, so a higher score on them is an engineering regression result, not a fresh generalization estimate. Use a newly collected, independently reviewed test set before making a broader quality claim.
+
+Run 04's LoRA adapter alone scored **12/25 (48%)** in an AI self-review. The desktop reference assistant in `offline_knowledge.py` answers stable factual and safety questions from a small source-grounded offline rule set, then falls back to the adapter. It scored **24/25 (96%)** on the same 25 questions; 22 answers came from rules and three from the model. These are distinct results. The remaining miss was an OTC medical reply. Neither score is native-speaker or clinical validation, and the rule set has not yet been ported to Android.
+
+```powershell
+# Reproduce the frozen-data model-only comparison with an explicit attention mask.
+.\.venv\Scripts\python.exe training\compare_adapter.py --data data\private\waray-reviewed-run04.csv --baseline-review outputs\waray-baseline.csv --adapter outputs\waray-run-04\adapter --output outputs\waray-run-04\comparison-masked.csv
+
+# Evaluate the desktop reference assistant (rules, then model fallback).
+.\.venv\Scripts\python.exe training\compare_adapter.py --data data\private\waray-reviewed-run04.csv --baseline-review outputs\waray-baseline.csv --adapter outputs\waray-run-04\adapter --output outputs\waray-run-04\comparison-assisted.csv --knowledge
+```
+
+Both commands refuse to overwrite an existing comparison. The resulting CSV needs ratings and an explicit `adapted_reviewed_by` entry before `score_comparison.py` will report a score. The private `waray-reviewed-run04.csv` snapshot has SHA-256 `7db34b96626e0d551a1ca32764ac5d13cc1d25874005b535c08c740983141a30`. Its companion `waray-reviewed-before-run04.csv` preserves the 120-train-row starting set. The current `waray-reviewed.csv` has corrected source metadata for food examples; prompt and reply text is identical to the snapshot.
 
 ### Adapter merge and GGUF export for Android
 
@@ -59,11 +93,11 @@ Once an adapted run is evaluated, merge the LoRA weights into the base model and
 
 ```powershell
 # 1. Merge LoRA adapter into base model weights
-.\.venv\Scripts\python.exe training\merge_adapter.py --adapter outputs\waray-run-02\adapter --output models\waray-sailor2-1b-merged
+.\.venv\Scripts\python.exe training\merge_adapter.py --adapter outputs\waray-run-04\adapter --output models\waray-sailor2-1b-v3-merged
 
 # 2. Convert to GGUF (Q8_0 for compact high quality ~1.05 GB, or F16 ~1.98 GB)
-.\.venv\Scripts\python.exe .venv\llama.cpp\convert_hf_to_gguf.py models\waray-sailor2-1b-merged --outfile models\waray-chat-v1-q8_0.gguf --outtype q8_0
-.\.venv\Scripts\python.exe .venv\llama.cpp\convert_hf_to_gguf.py models\waray-sailor2-1b-merged --outfile models\waray-chat-v1-f16.gguf --outtype f16
+.\.venv\Scripts\python.exe .venv\llama.cpp\convert_hf_to_gguf.py models\waray-sailor2-1b-v3-merged --outfile models\waray-chat-v3-q8_0.gguf --outtype q8_0
+.\.venv\Scripts\python.exe .venv\llama.cpp\convert_hf_to_gguf.py models\waray-sailor2-1b-v3-merged --outfile models\waray-chat-v3-f16.gguf --outtype f16
 ```
 
 This desktop process does not replace the offline Android phone checks. Test on an API 28+ 6 GB phone in airplane mode. For Cebuano and Ilocano, use separate reviewed CSV files and output folders after the Waray run is evaluated.

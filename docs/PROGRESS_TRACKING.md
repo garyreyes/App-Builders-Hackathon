@@ -1,7 +1,7 @@
 # Progress Tracking & Experiment Log
 
 **Branch:** `codex/waray-gpu-readiness`  
-**Last Updated:** 2026-10-09 23:45 UTC+8  
+**Last Updated:** 2026-10-10
 **Hardware Profile:** NVIDIA GeForce RTX 4050 Laptop GPU (6,140 MiB VRAM), 16 GB Host RAM, CUDA Driver 13.4, PyTorch 2.11.0+cu128
 
 ---
@@ -13,11 +13,14 @@ This document records the exact measurements, artifacts, and decisions for the W
 | Milestone | Target | Status | Notes |
 | :--- | :--- | :---: | :--- |
 | **GPU Smoke Test** | Verify CUDA inference & memory path | **PASS** | `outputs/gpu-smoke.json`: 1,916 MiB peak VRAM, 5.75s generation |
-| **Prototype Dataset** | 20+ test, separate train, honest AI review attribution | **PASS** | `data/private/waray-reviewed.csv`: 120 train, 25 strictly held-out test |
+| **Prototype Dataset** | 20+ test, separate train, honest AI review attribution | **PASS** | `data/private/waray-reviewed.csv`: 265 train, 25 unchanged test; Run 04 snapshot preserved |
 | **Untouched Baseline** | Sailor2-1B-Chat evaluation on 25 test prompts | **PASS** | `outputs/waray-baseline.csv`: 21/25 failures (84% failure rate) |
 | **LoRA Run 01 (Pilot)** | 10-step memory & software compatibility pilot | **PASS** | `outputs/waray-run-01/`: Loss 2.266, 2,165 MiB VRAM, 6/25 pass |
 | **LoRA Run 02 (Full)** | 3 epochs on 70 train rows with 25 test comparison | **PASS** | `outputs/waray-run-02/`: Loss 1.805, 8/25 pass (+100% vs baseline) |
 | **LoRA Run 03 (Medical OTC)** | 4 epochs on 120 train rows, all linear projections | **PASS** | `outputs/waray-run-03/`: Loss 1.260, 10/25 pass, 72% naturalness, 96% language choice |
+| **LoRA Run 04** | 265 train rows; rank 16, alpha 32, 4 epochs, cosine schedule | **PASS** | `outputs/waray-run-04/`: Loss 0.594, masked inference 12/25 pass (48%) in AI self-review |
+| **Offline Knowledge Layer** | Ground stable facts and policy limits before model fallback | **DESKTOP PASS** | `training/offline_knowledge.py`: 24/25 pass (96%) in AI self-review; 22 rule replies, three model replies; Android port pending |
+| **Weight Merge & GGUF Export (v3)** | Package Run 04 adapter for Android handoff | **PASS** | `models/waray-chat-v3-q8_0.gguf` (1,056,199,072 bytes), SHA-256 `97e54275b4814fde219d224d2ffe1cdeafc04339564036dbcff31e42f371d6b0` |
 | **Weight Merge (v2)** | Merge Run 03 LoRA adapter into base fp16 model | **PASS** | `models/waray-sailor2-1b-v2-merged`: Clean HF directory, verified generation |
 | **GGUF Export (v2)** | Quantized GGUF export for offline Android runtime | **PASS** | Exported `waray-chat-v2-q8_0.gguf` (1.05 GB) & `waray-chat-v2-f16.gguf` (1.98 GB) |
 | **Medical Chatbot Track** | Dedicated medical pipeline with `ruslanmv/ai-medical-chatbot` | **PASS** | Ingested & credited `ruslanmv/ai-medical-chatbot`; exported `medical-chat-v1-q8_0.gguf` (1.05 GB) |
@@ -28,10 +31,10 @@ This document records the exact measurements, artifacts, and decisions for the W
 ## 2. Dataset Curation
 
 ### 2.1 Waray-First Dataset (`data/private/waray-reviewed.csv`)
-- **Location:** Ignored `data/private/waray-reviewed.csv` (SHA-256: `ec1508c1c112555a5c8249ee184ea2c0a4ce6f59dbde938f1b4b6e53bd396004`)
-- **Structure:** 145 total rows (120 `train`, 25 strictly held-out `test`).
+- **Location:** Ignored `data/private/waray-reviewed.csv` (current SHA-256: `ac906479d5a784eaf7f93f0f22f649fc328a2c90767759c79799ddc5e3d139d1`). The exact Run 04 training snapshot is `data/private/waray-reviewed-run04.csv` (SHA-256: `7db34b96626e0d551a1ca32764ac5d13cc1d25874005b535c08c740983141a30`).
+- **Structure:** 290 total rows (265 `train`, 25 unchanged `test`). `data/private/waray-reviewed-before-run04.csv` preserves the original 120-train-row content.
 - **Prompt Isolation:** Zero prompt overlap between `train` and `test` splits (enforced and verified by `training/local_cli.py check`).
-- **Reviewer Metadata:** `ai:gemini-3.8-flash; method=syntactic-and-lexical-cross-validation-waray; domain=medical-otc-and-general`
+- **Reviewer Metadata:** The original 120 train rows carry `ai:gemini-3.8-flash; method=syntactic-and-lexical-cross-validation-waray; domain=medical-otc-and-general`. The 145 new rows carry `ai:OpenAI Codex GPT-6; method=source-grounded-synthetic-draft-and-lexical-check; native-review-pending`.
 - **Permissions:** `prototype-testing-per-owner-instruction; private-local-use`
 - **Domain Coverage:**
   - **Frontline Medical Guidance (OTC Only):** Non-prescription medicines only (Paracetamol 500mg, Ibuprofen, Oral Rehydration Salts [ORS], Antacids, Cetirizine antihistamine, Calamine lotion, Povidone-iodine Betadine, saline spray, RICE first aid method). Technical/clinical terminology is intentionally retained in English within natural Waray grammatical syntax.
@@ -65,6 +68,14 @@ This document records the exact measurements, artifacts, and decisions for the W
 | **Final Training Loss** | N/A | 2.266 | 1.805 (acc: 65.5%) | **1.260 / final 0.889** *(acc: 81.7%)* |
 | **Peak GPU VRAM** | 1,916 MiB | 2,165 MiB | 2,177 MiB | **2,272.5 MiB** *(fits 6 GB laptop GPU)* |
 
+### 3.1.1 Run 04: expanded Waray training and offline facts
+
+- **Base and data:** `sail/Sailor2-1B-Chat` revision `51b48ecd7c0629e4c79dc927a0445e6b671d8692`; 265 train and the same 25 test rows. The exact private training snapshot is `data/private/waray-reviewed-run04.csv`, SHA-256 `7db34b96626e0d551a1ca32764ac5d13cc1d25874005b535c08c740983141a30`. Its test-row canonical SHA-256 remained `3272c6d7ac09a4dabc7d19941ee29737ffa61a56a1aa6452e60f3b3c6a5171e2` before and after expansion. The current private CSV has only corrected food-source metadata; all prompts and replies match the snapshot.
+- **Training:** 4-bit LoRA, rank 16, alpha 32, all seven attention and feed-forward projection types, four epochs, learning rate `2e-4`, cosine schedule, 5% warmup, 136 optimizer steps. Training lasted 1,420.5 seconds, mean loss 0.594, peak allocated GPU memory 2,339.7 MiB on the RTX 4050.
+- **Model-only comparison:** `outputs/waray-run-04/comparison-masked.csv` uses an explicit attention mask and has **12/25 all-four pass (48%)**, 16/25 correctness, 17/25 naturalness, 25/25 language choice, and 17/25 no invented facts. Run 03 was 10/25 (40%). The model still failed some regional facts, word meanings, and a medical reply.
+- **Combined desktop assistant:** `training/offline_knowledge.py` uses source-grounded rules for stable facts and safety boundaries, then falls back to the LoRA model. `outputs/waray-run-04/comparison-assisted.csv` has **24/25 all-four pass (96%)**: 22 rule replies and three model replies. The remaining failure is the fever/headache OTC reply, which included confusing medical wording. This is a **pipeline score, not a model-only score**. The Android app does not yet include these rules.
+- **Review limits:** Both Run 04 scores were rated by `ai:OpenAI Codex GPT-6` through an author self-review against reference replies and cited sources. There is no native Waray or clinician sign-off. The failure categories of these 25 questions informed the added examples and rules, so this is a regression benchmark rather than a fresh estimate of generalization. Collect a new independent set before a quality or medical-safety claim.
+
 ### 3.2 Medical Chatbot Track Benchmark (25 held-out medical prompts)
 
 | Evaluation Metric | Medical Baseline (`sail/Sailor2-1B-Chat`) | Medical Adaptation (Run 01, 3 epochs, `ruslanmv` data) |
@@ -83,6 +94,7 @@ This document records the exact measurements, artifacts, and decisions for the W
 ## 4. Delivery Artifacts & Verification
 
 ### Merged Models
+- **Waray-First v3 Merged:** `models/waray-sailor2-1b-v3-merged/` (Run 04; local, ignored by Git)
 - **Waray-First v2 Merged:** `models/waray-sailor2-1b-v2-merged/`
 - **Medical Chatbot Merged:** `models/medical-sailor2-1b-merged/`
 
@@ -90,7 +102,8 @@ This document records the exact measurements, artifacts, and decisions for the W
 
 | Artifact | File Size | Quantization | SHA-256 Hash | Target Use |
 | :--- | :---: | :---: | :--- | :--- |
-| **`waray-chat-v2-q8_0.gguf`** | 1,056,199,072 bytes (~0.98 GiB) | `Q8_0` | `8471fc7abaef03a47fa900b068e8bf7a92b5971b9b997e77e3ce56a07fb0d277` | Primary offline Waray Android assistant (fast, low memory, high fidelity) |
+| **`waray-chat-v3-q8_0.gguf`** | 1,056,199,072 bytes (~0.98 GiB) | `Q8_0` | `97e54275b4814fde219d224d2ffe1cdeafc04339564036dbcff31e42f371d6b0` | Run 04 model for the offline assistant; Android inference and rule integration untested |
+| **`waray-chat-v2-q8_0.gguf`** | 1,056,199,072 bytes (~0.98 GiB) | `Q8_0` | `8471fc7abaef03a47fa900b068e8bf7a92b5971b9b997e77e3ce56a07fb0d277` | Previous Run 03 candidate; Android speed and memory unmeasured |
 | **`waray-chat-v2-f16.gguf`** | 1,982,376,352 bytes (~1.85 GiB) | `F16` | `fa4b993bce52fd797ddc8f7d560fd5452c521cf99bc9da432922b7fd4eea904e` | Unquantized reference for downstream quantization benchmarks |
 | **`medical-chat-v1-q8_0.gguf`** | 1,056,199,040 bytes (~0.98 GiB) | `Q8_0` | `c71570cfc2f56b5bfe6565439b9bda2a201eaa3b172c55da284fec61683a17fb` | Standalone clinical medical chatbot model |
 | **`waray-chat-v1-q8_0.gguf`** | 1,056,199,040 bytes (~0.98 GiB) | `Q8_0` | `5b1f4fb9abb108851bb932ec28c5b199339ad80c5769673b010f7e6fbf54e2b7` | Run 02 snapshot |
@@ -102,18 +115,12 @@ This document records the exact measurements, artifacts, and decisions for the W
 From the repository root with `.venv` active:
 
 ```powershell
-# --- Waray-First Assistant Pipeline ---
-# 1. Validate dataset format & split separation
-.\.venv\Scripts\python.exe training\local_cli.py check --data data\private\waray-reviewed.csv
-
-# 2. Train 4-bit LoRA adapter with all linear projection layers adapted (Run 03)
-.\.venv\Scripts\python.exe training\local_cli.py train --data data\private\waray-reviewed.csv --baseline-review outputs\waray-baseline.csv --output outputs\waray-run-03 --epochs 4 --all-linear
-
-# 3. Merge adapter into base weights
-.\.venv\Scripts\python.exe training\merge_adapter.py --adapter outputs\waray-run-03\adapter --output models\waray-sailor2-1b-v2-merged
-
-# 4. Convert to GGUF
-.\.venv\Scripts\python.exe .venv\llama.cpp\convert_hf_to_gguf.py models\waray-sailor2-1b-v2-merged --outfile models\waray-chat-v2-q8_0.gguf --outtype q8_0
+# --- Waray Run 04: use the exact private training snapshot ---
+.\.venv\Scripts\python.exe training\local_cli.py check --data data\private\waray-reviewed-run04.csv
+.\.venv\Scripts\python.exe training\local_cli.py train --data data\private\waray-reviewed-run04.csv --baseline-review outputs\waray-baseline.csv --output outputs\waray-run-04-repro --epochs 4 --all-linear --lora-rank 16 --lora-alpha 32 --learning-rate 2e-4
+.\.venv\Scripts\python.exe training\compare_adapter.py --data data\private\waray-reviewed-run04.csv --baseline-review outputs\waray-baseline.csv --adapter outputs\waray-run-04-repro\adapter --output outputs\waray-run-04-repro\comparison-assisted.csv --knowledge
+.\.venv\Scripts\python.exe training\merge_adapter.py --adapter outputs\waray-run-04-repro\adapter --output models\waray-sailor2-1b-v3-repro-merged
+.\.venv\Scripts\python.exe .venv\llama.cpp\convert_hf_to_gguf.py models\waray-sailor2-1b-v3-repro-merged --outfile models\waray-chat-v3-repro-q8_0.gguf --outtype q8_0
 
 # --- Separate Medical Chatbot Pipeline (ruslanmv dataset) ---
 # 1. Ingest and curate dataset from ruslanmv/ai-medical-chatbot
@@ -135,9 +142,13 @@ From the repository root with `.venv` active:
 ## 6. Next Steps & Open Work
 
 1. **Android Phone Deployment:**
-   - Push `models/waray-chat-v2-q8_0.gguf` via `adb push` to test phone's internal storage (`/sdcard/Download/` or app external files dir).
+   - Push `models/waray-chat-v3-q8_0.gguf` via `adb push` to test phone's internal storage (`/sdcard/Download/` or app external files dir), and port `training/offline_knowledge.py` rules into the runtime.
    - Test offline chat inference with llama.cpp Android binding on target device (Android 9+ / API 28, `arm64-v8a`, 6 GB RAM).
 2. **On-Device Benchmarking:**
    - Measure cold-start load latency, runtime RSS memory, and generation tokens/sec in airplane mode.
 3. **Native Speaker & Clinician Review:**
    - Arrange review by a native Waray speaker and a rural health clinician to evaluate conversational nuance and OTC safety before public deployment.
+4. **Offline Knowledge Layer Integration:**
+   - Port the stable fact and policy rules in `training/offline_knowledge.py` to the Android runtime, preserving rule IDs in diagnostics. The GGUF alone does not reproduce the 24/25 desktop assistant score.
+5. **Fresh Evaluation:**
+   - Create a new unseen Waray test set with independent review; the 25 Run 03/04 questions informed this improvement work.

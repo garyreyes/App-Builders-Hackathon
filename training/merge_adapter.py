@@ -58,10 +58,11 @@ def main() -> int:
         [{"role": "user", "content": test_prompt}],
         add_generation_prompt=True,
         return_tensors="pt",
+        return_dict=True,
     ).to(device)
     with torch.inference_mode():
-        out = merged_model.generate(inputs, max_new_tokens=48, do_sample=False)
-    reply = tokenizer.decode(out[0][inputs.shape[-1]:], skip_special_tokens=True).strip()
+        out = merged_model.generate(**inputs, max_new_tokens=48, do_sample=False)
+    reply = tokenizer.decode(out[0][inputs["input_ids"].shape[-1]:], skip_special_tokens=True).strip()
     print(f"\nVerification test prompt: '{test_prompt}'")
     print(f"Verification reply: '{reply}'\n")
     print(f"Successfully created merged model at: {args.output}")
