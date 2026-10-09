@@ -1,5 +1,7 @@
 package ph.appbuilders.offlinehealth.domain
 
+import ph.appbuilders.offlinehealth.domain.model.TopicId
+
 /**
  * Pure filter run on every model reply before any of it reaches the screen (ARCHITECTURE "Send pipeline" step 4).
  * Strict mode (owner, Oct 10): no medicine names, no medicine forms, no doses, no diagnoses, no phone numbers,
@@ -9,10 +11,11 @@ package ph.appbuilders.offlinehealth.domain
 object Guardrail {
     const val MAX_CHARS = 1200
 
-    fun allows(reply: String, dangerShown: Boolean): Boolean {
+    fun allows(reply: String, dangerShown: Boolean, topic: TopicId? = null): Boolean {
         val text = reply.lowercase()
         return when {
             text.isBlank() || text.length > MAX_CHARS -> false
+            topic == TopicId.BURN && GuardrailTerms.unsafeBurnClaim.containsMatchIn(text) -> false
             GuardrailTerms.dose.containsMatchIn(text) -> false
             GuardrailTerms.drug.containsMatchIn(text) -> false
             GuardrailTerms.diagnosis.containsMatchIn(text) -> false
@@ -88,6 +91,11 @@ internal object GuardrailTerms {
 
     /** Telling people not to use water on a wound or burn: the opposite of the first step. Spans "e.g." periods. */
     val noWater = Regex("""(?:do not|don'?t|avoid|never)\s+(?:apply|use|put|pour|run|rinse)\b[^!?\n]{0,40}\bwater\b""")
+
+    /** The checked burn card says clean running water for 20 minutes; reject other durations and additives. */
+    val unsafeBurnClaim = Regex(
+        """\b(?!20\b)\d+\s*(?:ka\s+|nga\s+)?(?:minutes?|minutos?)\b|\b(?:salt|asin|gatas|milk)\b|\b(?:hot water|mainit nga tubig)\b""",
+    )
 
     /** Emergency numbers from other countries, or the old 117 hotline. 911 is the Philippine number. */
     val otherEmergencyNumber = Regex("""\b(?:999|112|111|000|117|118|119)\b""")

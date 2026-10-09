@@ -31,6 +31,7 @@ class LlmChatService(
     private val triage: (String, Language) -> ChatResult,
     private val scope: CoroutineScope,
     private val prompt: (ChatResult, Language) -> String? = { _, _ -> null },
+    private val holdUntilReviewed: Boolean = false,
 ) : ChatService {
 
     private val status = MutableStateFlow(AiStatus.STARTING)
@@ -89,10 +90,11 @@ class LlmChatService(
         try {
             client.reply(system, history.toList(), text).collect { partial ->
                 full = ReplyText.plain(partial)
+                if (holdUntilReviewed) return@collect
                 // Only whole words are shown, and exactly what is shown has passed the guardrail.
                 val shown = ReplyText.visiblePrefix(full)
                 if (shown.isEmpty()) return@collect
-                if (!Guardrail.allows(shown, dangerShown)) throw Rejected()
+                if (!Guardrail.allows(shown, dangerShown, base.card?.topicId)) throw Rejected()
                 emit(base.copy(ai = AiReplyState.Streaming(shown)))
             }
         } catch (_: Rejected) {
@@ -104,7 +106,7 @@ class LlmChatService(
             return
         }
         val reply = ReplyText.finish(full)
-        if (!Guardrail.allows(reply, dangerShown)) {
+        if (!Guardrail.allows(reply, dangerShown, base.card?.topicId)) {
             emit(base.copy(ai = AiReplyState.Withheld))
             return
         }

@@ -7,8 +7,8 @@ In Antigravity 2.0, add this checkout folder to a Project and start the conversa
 ## Where the work is
 
 - Local checkout on this laptop: open the `App-Builders-Hackathon` folder already cloned in the workspace. Keep machine-specific paths out of the public repository.
-- Current local branch: `codex/waray-gpu-readiness`. Run 04 changes are in [draft pull request #9](https://github.com/garyreyes/Buha.ai/pull/9). Earlier pull request #7 was merged before Run 04. Private CSVs, comparison files, and model weights remain on this laptop.
-- Keep `origin/docs/planning` intact. It describes a different laptop-first health-visit scope. Current owner direction is an offline Android Waray assistant; the product use case is still unresolved between collaborators.
+- Current local branch: `codex/waray-gpu-readiness`. [Draft pull request #9](https://github.com/garyreyes/Buha.ai/pull/9) now includes Run 04 training code and the v3 debug Ollama integration with the current Android app. Earlier pull request #7 was merged. Private CSVs, comparison files, and model weights remain on this laptop.
+- Keep `origin/docs/planning` intact. It describes an older health-visit concept. The current app is an offline Android first-aid helper; see `README.md` and `docs/SCOPE.md`.
 
 ## Owner decisions from this chat
 

@@ -1,9 +1,8 @@
 # Sailor2 variant of health-chat, for testing the trained Waray model (ollama/README.md). Not the demo default.
 # The app sends its own system prompt (HealthPrompt.kt), which replaces SYSTEM below. Training used no
 # system prompt, so a trained Sailor2 under the app's prompt is untested: run the 10-question comparison first.
-# Stand-in FROM; for the trained model change only this line, e.g.
-#   FROM ./waray-chat-v2-q8_0.gguf
-FROM hf.co/bartowski/Sailor2-1B-Chat-GGUF:Q4_K_M
+# Run 04 Q8_0 export; keep the GGUF local and out of Git.
+FROM ../models/waray-chat-v3-q8_0.gguf
 
 # Explicit, so a GGUF swap can't change the prompt format. ChatML, identical to Sailor2's HF chat template.
 TEMPLATE """{{- range $i, $_ := .Messages }}
