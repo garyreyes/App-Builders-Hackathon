@@ -1,0 +1,33 @@
+# Private team notes: never commit (repo goes public)
+HACKATHON-BRIEF.md
+PROJECT-PROPOSAL.md
+PROJECT-PROPOSAL.pdf
+
+# AI model files (GBs; GitHub rejects >100 MB)
+*.gguf
+*.safetensors
+*.bin
+*.pt
+*.onnx
+models/
+
+# Python
+ai-env/
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+dist/
+
+# Secrets and local data
+.env
+.env.*
+*.db
+*.sqlite
+
+# OS / editor
+.DS_Store
+Thumbs.db
