@@ -33,6 +33,7 @@ import ph.appbuilders.offlinehealth.features.chat.ChatService
  * | anything else               | diarrhea card + streamed reply                      |
  *
  * The AI starts as STARTING and is READY after 3 s. [toggleBasicMode] is the debug-only switch to BASIC.
+ * The fake setup calls [useBasicMode] and [onModelReady], so the pill follows what the user chose there.
  */
 class FakeChatService(private val content: ContentSource, private val scope: CoroutineScope) : ChatService {
 
@@ -42,6 +43,14 @@ class FakeChatService(private val content: ContentSource, private val scope: Cor
     init {
         restartWarmUp(WARM_UP_MS)
     }
+
+    /** "Use basic mode for now" on the setup screen. */
+    fun useBasicMode() {
+        status.value = AiStatus.BASIC
+    }
+
+    /** Setup finished: the model starts like it does at launch. */
+    fun onModelReady() = restartWarmUp(WARM_UP_MS)
 
     /** Debug-only too: back to STARTING for long enough to send a message and see "AI warming up" (C8). */
     fun restartWarmUp(durationMs: Long = DEBUG_WARM_UP_MS) {
