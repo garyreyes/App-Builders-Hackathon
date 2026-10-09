@@ -6,8 +6,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import ph.appbuilders.offlinehealth.app.AppNavigation
+import ph.appbuilders.offlinehealth.app.OfflineHealthApp
 import ph.appbuilders.offlinehealth.app.theme.AppTheme
-import ph.appbuilders.offlinehealth.features.gallery.ComponentGallery
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,7 +17,7 @@ class MainActivity : ComponentActivity() {
         val lightBars = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
         enableEdgeToEdge(statusBarStyle = lightBars, navigationBarStyle = lightBars)
         setContent {
-            AppTheme { ComponentGallery() }
+            AppTheme { AppNavigation((application as OfflineHealthApp).container) }
         }
     }
 }

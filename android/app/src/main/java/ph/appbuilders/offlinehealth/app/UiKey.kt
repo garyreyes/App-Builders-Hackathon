@@ -27,7 +27,6 @@ object UiKey {
     // Composer
     const val COMPOSER_DISCLAIMER = "composer.disclaimer"
     const val COMPOSER_PLACEHOLDER = "composer.placeholder"
-    const val COMPOSER_FIELD_DESC = "composer.field.desc"
     const val COMPOSER_SEND = "composer.send"
 
     // Danger banner
@@ -47,4 +46,18 @@ object UiKey {
     const val AI_WITHHELD = "ai.withheld"
     const val AI_BASIC = "ai.basic"
     const val AI_BASIC_CTA = "ai.basic.cta"
+
+    // Chat screen
+    const val CHAT_PROMPT = "chat.prompt"
+    const val CHAT_SUBTITLE = "chat.subtitle"
+    const val CHAT_EXAMPLES = "chat.examples"
+    const val CHAT_EXAMPLE_1 = "chat.example.1"
+    const val CHAT_EXAMPLE_2 = "chat.example.2"
+    const val CHAT_EXAMPLE_3 = "chat.example.3"
+    const val CHAT_TOPICS = "chat.topics"
+    const val CHAT_ALSO_ABOUT = "chat.alsoAbout"
+    const val CHAT_REPLY_BELOW = "chat.replyBelow"
+    const val NOT_COVERED_TITLE = "notCovered.title"
+    const val NOT_COVERED_BODY = "notCovered.body"
+    const val NOT_COVERED_TOPICS = "notCovered.topics"
 }

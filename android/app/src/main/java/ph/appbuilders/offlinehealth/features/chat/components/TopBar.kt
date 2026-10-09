@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -56,6 +55,9 @@ import ph.appbuilders.offlinehealth.fakes.PreviewFrame
 fun rememberCompactTopBar(): Boolean =
     LocalDensity.current.fontScale >= 1.3f || LocalConfiguration.current.screenWidthDp < 340
 
+/** An extra overflow-menu entry. Used only for debug-build controls over the fakes (labels are dev-only). */
+data class MenuAction(val label: String, val onClick: () -> Unit)
+
 /** Chat top bar: app mark, AI status pill, language switch (one tap), overflow menu. No title text. */
 @Composable
 fun TopBar(
@@ -67,18 +69,22 @@ fun TopBar(
     modifier: Modifier = Modifier,
     showDivider: Boolean = false,
     compact: Boolean = rememberCompactTopBar(),
+    debugItems: List<MenuAction> = emptyList(),
 ) {
     Column(modifier.fillMaxWidth().background(Palette.Paper)) {
         Row(
-            modifier = Modifier.fillMaxWidth().height(64.dp).padding(start = 16.dp, end = 4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+                .padding(start = if (compact) 12.dp else 16.dp, end = if (compact) 2.dp else 4.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 8.dp),
         ) {
             Icon(painterResource(R.drawable.ic_app_mark), null, Modifier.size(32.dp), tint = Color.Unspecified)
             StatusPill(status, compact, onStatusClick)
             Spacer(Modifier.weight(1f))
-            LanguageButton(onLanguageClick)
-            OverflowMenu(onTopicsClick, onSettingsClick)
+            LanguageButton(compact, onLanguageClick)
+            OverflowMenu(onTopicsClick, onSettingsClick, debugItems)
         }
         if (showDivider) HorizontalDivider(thickness = 1.dp, color = Palette.Divider)
     }
@@ -100,8 +106,7 @@ private fun StatusPill(status: AiStatus, compact: Boolean, onClick: () -> Unit) 
             .clickable(role = Role.Button, onClick = onClick)
             .semantics { contentDescription = description }
             .background(Palette.Surface)
-            .height(32.dp)
-            .padding(if (compact) PaddingValues(horizontal = 7.dp) else PaddingValues(start = 8.dp, end = 12.dp)),
+            .then(if (compact) Modifier.size(36.dp) else Modifier.height(32.dp).padding(start = 8.dp, end = 12.dp)),
         contentAlignment = Alignment.Center,
     ) {
         Crossfade(status, animationSpec = tween(Motion.PILL_CROSSFADE_MS), label = "status pill") { shown ->
@@ -132,7 +137,7 @@ private fun StatusIcon(status: AiStatus) {
 }
 
 @Composable
-private fun LanguageButton(onClick: () -> Unit) {
+private fun LanguageButton(compact: Boolean, onClick: () -> Unit) {
     val text = LocalUiText.current
     val description = text.get(UiKey.TOPBAR_LANGUAGE_DESC, "language" to text[UiKey.LANGUAGE_NAME])
     Row(
@@ -141,9 +146,9 @@ private fun LanguageButton(onClick: () -> Unit) {
             .clip(CircleShape)
             .clickable(role = Role.Button, onClick = onClick)
             .semantics(mergeDescendants = true) { contentDescription = description }
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = if (compact) 8.dp else 12.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 6.dp),
     ) {
         Icon(painterResource(R.drawable.ic_language), null, Modifier.size(22.dp), tint = Palette.Ink)
         Text(
@@ -156,7 +161,7 @@ private fun LanguageButton(onClick: () -> Unit) {
 }
 
 @Composable
-private fun OverflowMenu(onTopicsClick: () -> Unit, onSettingsClick: () -> Unit) {
+private fun OverflowMenu(onTopicsClick: () -> Unit, onSettingsClick: () -> Unit, debugItems: List<MenuAction>) {
     val text = LocalUiText.current
     var open by remember { mutableStateOf(false) }
     Box {
@@ -173,6 +178,12 @@ private fun OverflowMenu(onTopicsClick: () -> Unit, onSettingsClick: () -> Unit)
         ) {
             MenuItem(R.drawable.ic_grid_view, text[UiKey.MENU_TOPICS]) { open = false; onTopicsClick() }
             MenuItem(R.drawable.ic_settings, text[UiKey.MENU_SETTINGS]) { open = false; onSettingsClick() }
+            debugItems.forEach { item ->
+                DropdownMenuItem(
+                    text = { Text(item.label, style = MaterialTheme.typography.labelMedium, color = Palette.InkMuted) },
+                    onClick = { open = false; item.onClick() },
+                )
+            }
         }
     }
 }

@@ -22,6 +22,11 @@ object FakeSamples {
     const val REPLY_CEB = "Kay naa nay dugo sa tae sa imong anak, dad-a siya dayon sa health center. " +
         "Samtang nagbiyahe, padayon og hatag og ORS ug gatas."
     const val REPLY_CEB_PARTIAL = "Kay naa nay dugo sa tae sa imong anak, dad-a siya dayon sa health center. Samtang"
+    const val REPLY_ENG_BLOOD = "Because there is blood in your child’s stool, take them to the health center now. " +
+        "On the way, keep giving ORS and milk."
+    val seizureCeb = listOf(DangerMessage(DangerSignId.SEIZURE, "Kumbulsyon (pagkurog sa lawas)."))
+    val seizureEng = listOf(DangerMessage(DangerSignId.SEIZURE, "Seizure (the body is shaking)."))
+
     const val REPLY_ENG = "Because your baby is very sleepy and can’t keep anything down, go to the health center now. " +
         "On the way, keep offering small sips of ORS."
 }

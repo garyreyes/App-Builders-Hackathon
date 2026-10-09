@@ -47,17 +47,22 @@ const val MAX_DANGER_REASONS = 3
  * TalkBack reads it first (assertive live region). [onCall] should open the dialer at 911.
  */
 @Composable
-fun DangerBanner(dangers: List<DangerMessage>, onCall: () -> Unit, modifier: Modifier = Modifier) {
+fun DangerBanner(
+    dangers: List<DangerMessage>,
+    onCall: () -> Unit,
+    modifier: Modifier = Modifier,
+    compact: Boolean = false,
+) {
     val text = LocalUiText.current
     Column(
         modifier = modifier
             .fillMaxWidth()
             .background(Palette.Danger, MaterialTheme.shapes.large)
             .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Assertive }
-            .padding(20.dp),
+            .padding(horizontal = if (compact) 16.dp else 20.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(if (compact) 10.dp else 12.dp)) {
             Icon(painterResource(R.drawable.ic_warning), null, Modifier.size(32.dp), tint = Palette.Paper)
             Text(
                 text[UiKey.DANGER_HEADLINE],
@@ -66,7 +71,8 @@ fun DangerBanner(dangers: List<DangerMessage>, onCall: () -> Unit, modifier: Mod
                 color = Palette.Paper,
             )
         }
-        Column(Modifier.padding(start = 44.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        // At 320 dp / large fonts (C12) the reasons drop their indent to keep the line length readable.
+        Column(Modifier.padding(start = if (compact) 0.dp else 44.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             dangers.take(MAX_DANGER_REASONS).forEach { Reason(it.text) }
         }
         CallButton(text[UiKey.DANGER_CALL], onCall)
@@ -111,4 +117,4 @@ private fun DangerBannerOneReason() = PreviewFrame { DangerBanner(FakeSamples.da
 private fun DangerBannerThreeReasons() = PreviewFrame(Language.ENG) { DangerBanner(FakeSamples.dangerEngThree, {}) }
 
 @Preview(widthDp = 320, fontScale = 1.5f) @Composable
-private fun DangerBannerNarrow() = PreviewFrame { DangerBanner(FakeSamples.dangerCeb, {}) }
+private fun DangerBannerNarrow() = PreviewFrame { DangerBanner(FakeSamples.dangerCeb, {}, compact = true) }
