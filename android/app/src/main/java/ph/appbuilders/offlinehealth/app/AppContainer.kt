@@ -31,10 +31,9 @@ import ph.appbuilders.offlinehealth.lib.settings.LanguageSettings
  * here and only here (frontend brief §3). Nothing else in the UI knows which implementation it has.
  *
  * Where the AI runs, first match wins:
- * 1. Debug builds with preferOllama=true: the selected laptop model over adb, even if Gemma is installed.
- * 2. ON THE PHONE: the Gemma 4 E2B file is in the app's storage → LiteRT-LM, fully offline (any build).
- * 3. Other debug builds: the laptop's Ollama over adb (see ollama/README.md).
- * 4. Otherwise the fakes.
+ * 1. ON THE PHONE: the Gemma 4 E2B file is in the app's storage → LiteRT-LM, fully offline (any build).
+ * 2. Debug builds: the laptop's Ollama over USB/wireless adb (BuildConfig.USE_OLLAMA, see ollama/README.md).
+ * 3. Otherwise the fakes.
  */
 class AppContainer(context: Context) {
 
@@ -54,15 +53,13 @@ class AppContainer(context: Context) {
     /** Which AI the app is using, for the debug menu and the demo ("on this phone" vs "laptop"). */
     val aiSource: String =
         when {
-            BuildConfig.USE_OLLAMA && BuildConfig.PREFER_OLLAMA -> "laptop via Ollama (${BuildConfig.OLLAMA_MODEL})"
             phoneModel.isFile -> "on this phone (Gemma 4 E2B, LiteRT-LM)"
-            BuildConfig.USE_OLLAMA -> "laptop via Ollama (${BuildConfig.OLLAMA_MODEL})"
+            BuildConfig.USE_OLLAMA -> "laptop via Ollama"
             else -> "none (fakes)"
         }
 
     private val llmClient: LlmClient? =
         when {
-            BuildConfig.USE_OLLAMA && BuildConfig.PREFER_OLLAMA -> OllamaClient(BuildConfig.OLLAMA_URL, BuildConfig.OLLAMA_MODEL)
             phoneModel.isFile -> LiteRtClient(phoneModel, context.cacheDir.path)
             BuildConfig.USE_OLLAMA -> OllamaClient(BuildConfig.OLLAMA_URL, BuildConfig.OLLAMA_MODEL)
             else -> null
@@ -78,8 +75,6 @@ class AppContainer(context: Context) {
                 prompt = { result, language ->
                     HealthPrompt.build(result.card?.let { demoContent.card(it.topicId, Language.ENG) }, language)
                 },
-                // V3 is experimental: hold its whole reply until the guardrail has checked the final text.
-                holdUntilReviewed = BuildConfig.USE_OLLAMA && BuildConfig.PREFER_OLLAMA,
             )
         }
     private val fakeChat = FakeChatService(FakeTriage(content), appScope)

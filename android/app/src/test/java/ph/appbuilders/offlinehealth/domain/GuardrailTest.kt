@@ -3,20 +3,11 @@ package ph.appbuilders.offlinehealth.domain
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import ph.appbuilders.offlinehealth.domain.model.TopicId
 
 /** PRD: 0 model replies with a dose, medicine name, or diagnosis reach the screen. Strict mode (owner, Oct 10). */
 class GuardrailTest {
 
-    private fun allows(text: String, dangerShown: Boolean = false, topic: TopicId? = null) =
-        Guardrail.allows(text, dangerShown, topic)
-
-    @Test fun burnReplyWithWrongDurationOrAdditiveIsBlocked() {
-        assertFalse(allows("Buhusi hin tubig sulod hin 10 minutos.", topic = TopicId.BURN))
-        assertFalse(allows("Use water with salt on the burn.", topic = TopicId.BURN))
-        assertFalse(allows("Use hot water on the burn.", topic = TopicId.BURN))
-        assertTrue(allows("Cool the burn under clean running water for 20 minutes.", topic = TopicId.BURN))
-    }
+    private fun allows(text: String, dangerShown: Boolean = false) = Guardrail.allows(text, dangerShown)
 
     @Test fun plainFirstAidAdviceIsAllowed() {
         assertTrue(allows("Hatagi hin damo nga tubig ngan ORS an bata."))

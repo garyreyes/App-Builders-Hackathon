@@ -3,9 +3,6 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-val demoOllamaModel = providers.gradleProperty("ollamaModel").getOrElse("health-chat")
-val preferOllama = providers.gradleProperty("preferOllama").map(String::toBoolean).getOrElse(false)
-
 android {
     namespace = "ph.appbuilders.offlinehealth"
     compileSdk {
@@ -26,7 +23,6 @@ android {
 
         // Release stays on the fakes and has no INTERNET permission (PRD). See ollama/README.md.
         buildConfigField("boolean", "USE_OLLAMA", "false")
-        buildConfigField("boolean", "PREFER_OLLAMA", "false")
         buildConfigField("String", "OLLAMA_URL", "\"\"")
         buildConfigField("String", "OLLAMA_MODEL", "\"\"")
     }
@@ -35,9 +31,8 @@ android {
         debug {
             // Demo bridge: the laptop's Ollama, reached over USB with `adb reverse tcp:11434 tcp:11434`.
             buildConfigField("boolean", "USE_OLLAMA", "true")
-            buildConfigField("boolean", "PREFER_OLLAMA", preferOllama.toString())
             buildConfigField("String", "OLLAMA_URL", "\"http://127.0.0.1:11434\"")
-            buildConfigField("String", "OLLAMA_MODEL", "\"$demoOllamaModel\"")
+            buildConfigField("String", "OLLAMA_MODEL", "\"health-chat\"")
         }
     }
 

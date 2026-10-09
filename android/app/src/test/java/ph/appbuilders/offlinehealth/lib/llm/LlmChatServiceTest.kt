@@ -46,11 +46,8 @@ class LlmChatServiceTest {
     private val withCard = ChatResult(emptyList(), card, emptySet(), emptyList(), ai = null)
     private val noCard = ChatResult(emptyList(), null, emptySet(), emptyList(), ai = null)
 
-    private fun TestScope.service(client: LlmClient, result: ChatResult = withCard, holdUntilReviewed: Boolean = false) =
-        LlmChatService(
-            client, { _, _ -> result }, backgroundScope,
-            prompt = { r, l -> "prompt:${r.card?.topicId}:$l" }, holdUntilReviewed = holdUntilReviewed,
-        )
+    private fun TestScope.service(client: LlmClient, result: ChatResult = withCard) =
+        LlmChatService(client, { _, _ -> result }, backgroundScope, prompt = { r, l -> "prompt:${r.card?.topicId}:$l" })
 
     private suspend fun LlmChatService.states(text: String = "q") =
         send(text, Language.WAR).toList().map { it.ai }
@@ -115,14 +112,6 @@ class LlmChatServiceTest {
         val states = service(client).states()
         assertEquals(AiReplyState.Withheld, states.last())
         assertFalse(states.any { it is AiReplyState.Streaming && "paracetamol" in it.text })
-    }
-
-    @Test fun experimentalModelReplyIsHeldUntilTheFullBurnTextIsChecked() = runTest {
-        val burn = withCard.copy(card = TopicCard(TopicId.BURN, "Burn", listOf("Cool for 20 minutes."), emptyList(), "WHO"))
-        val client = FakeClient(chunks = listOf("Cool it under water. ", "Cool it under water for 10 minutos."))
-        val states = service(client, burn, holdUntilReviewed = true).states()
-        assertEquals(AiReplyState.Withheld, states.last())
-        assertFalse(states.any { it is AiReplyState.Streaming })
     }
 
     @Test fun aNumberIsNeverShownBeforeTheGuardrailSeesItsUnit() = runTest {

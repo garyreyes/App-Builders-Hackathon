@@ -56,30 +56,15 @@ user's language) and turns thinking off, so the Modelfile's own `SYSTEM` is only
 
 ## Try the trained Waray model
 
-`ollama/Modelfile.sailor2` loads the local Run 04 v3 GGUF from `models/` and uses Sailor2's ChatML template.
-The GGUF is local and Git-ignored. Verify its SHA-256 before creating a separate Ollama model:
+`ollama/Modelfile.sailor2` is the Sailor2 variant (ChatML template). To test the trained model:
 
-```powershell
-Get-FileHash models\waray-chat-v3-q8_0.gguf -Algorithm SHA256
-# Expected: 97E54275B4814FDE219D224D2FFE1CDEAFC04339564036DBCFF31E42F371D6B0
-ollama create health-chat-v3 -f ollama/Modelfile.sailor2
-adb reverse tcp:11434 tcp:11434
-cd android
-.\gradlew.bat :app:installDebug -PpreferOllama=true -PollamaModel=health-chat-v3
-```
+1. Put `waray-chat-v2-q8_0.gguf` in this `ollama/` folder (`*.gguf` is gitignored; never commit it).
+2. Check the file: `Get-FileHash ollama\waray-chat-v2-q8_0.gguf` must print
+   `8471FC7ABAEF03A47FA900B068E8BF7A92B5971B9B997E77E3CE56A07FB0D277`.
+3. In `Modelfile.sailor2`, change only the `FROM` line to `FROM ./waray-chat-v2-q8_0.gguf`.
+4. `ollama create health-chat -f ollama/Modelfile.sailor2`, then send messages in the app. No app change.
+5. Switch back any time with `ollama create health-chat -f ollama/Modelfile`.
 
-Open the debug app and choose Waray. The debug menu identifies the source as `laptop via Ollama
-(health-chat-v3)`. The two Gradle properties affect only the debug build: `preferOllama` selects the
-laptop even if the Gemma file is on the phone, and `ollamaModel` selects the local Ollama model name.
-Build without those properties to restore the usual phone-Gemma-first behavior. This bridge runs the
-model on the laptop over adb; it is not an on-phone GGUF runtime or a phone airplane-mode test.
-
-Run 04's model-only result was 12/25 on the known Waray set. The 24/25 combined desktop result also
-used `training/offline_knowledge.py`, which has not been ported to Android. The app's prompt and strict
-medical guardrail can change or hide the model's replies. Compare the same health questions against
-Gemma before choosing a demo default; keep native Waray and clinical review pending.
-In a local v3 Ollama smoke test, an unguarded burn reply suggested an unsuitable remedy and an OTC drug
-despite the system prompt. An initial app run also showed an incorrect burn-cooling duration. The debug
-v3 path now holds the whole reply until the guardrail checks it; burn replies with a duration other than
-the checked card's 20 minutes or with salt, milk, or hot water are withheld. This is a narrow safety check,
-not clinical validation. The checked card remains available when a reply is withheld.
+Training used no system prompt, so the trained model under the app's prompt is untested. Before choosing it for
+the demo, run the same 10-question comparison and keep it only if it beats Gemma there. Its OTC-medicine habit
+will make the strict guardrail hide many replies.
