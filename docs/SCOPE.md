@@ -18,5 +18,8 @@ phone remain the first compatibility targets. The `docs/planning` branch (origin
 - ~~Product use case~~ **Decided:** offline health helper (see PRD).
 - Which teammate supplies Waray review and consented speech recordings.
 - How the Android runtime will support API 28, since the current sample app requires API 33.
+- **New (Oct 9, late):** Health Library + "Who is this for?" + optional on-phone memory. The app side is in
+  [ARCHITECTURE.md](ARCHITECTURE.md). The language collaborator's tasks, open questions, and deferred items are in
+  [teammate-tasks.md](teammate-tasks.md).
 
 Do not claim a trained model, speech recognition, Android compatibility, or medical decision support until tested and documented.
