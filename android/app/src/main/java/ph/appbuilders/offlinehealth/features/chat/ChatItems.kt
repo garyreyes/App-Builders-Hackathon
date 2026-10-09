@@ -40,7 +40,7 @@ private fun turnItems(turn: ChatTurn): List<ChatItem> = buildList {
     val ai = result.ai
     val answering = ai != null && ai != AiReplyState.Withheld && ai != AiReplyState.BasicMode
     if (answering) {
-        add(ChatItem.Ai(turn.id, ai!!))
+        add(ChatItem.Ai(turn.id, ai))
         if (result.card != null) add(ChatItem.Card(turn.id, result.card, result.matchedSigns, compact = true))
     } else {
         if (result.card != null) add(ChatItem.Card(turn.id, result.card, result.matchedSigns, compact = false))

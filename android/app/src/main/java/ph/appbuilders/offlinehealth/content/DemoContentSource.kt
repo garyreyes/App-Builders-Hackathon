@@ -13,7 +13,8 @@ import ph.appbuilders.offlinehealth.fakes.LanguageSelf
 
 /**
  * The demo Health Library: only topics with written cards ([DemoCards]) exist, so no placeholder can reach the
- * screen. UI copy still comes from the frontend's copy tables (FakeCopy.kt) until `ui_strings.json` exists.
+ * screen. UI copy comes from the frontend's copy tables (FakeCopy.kt, plus Waray/Tagalog chat copy in DemoUiText.kt)
+ * until `ui_strings.json` exists.
  */
 class DemoContentSource : ContentSource {
 
@@ -28,7 +29,12 @@ class DemoContentSource : ContentSource {
 
     override fun uiString(key: String, language: Language): String =
         LanguageSelf[language]?.get(key)
-            ?: (if (language == Language.CEB) BisayaUi[key] else null)
+            ?: when (language) {
+                Language.CEB -> BisayaUi[key]
+                Language.WAR -> WarayUi[key]
+                Language.TGL -> TagalogUi[key]
+                Language.ENG -> null
+            }
             ?: EnglishUi[key]
             ?: "[$key]"
 
@@ -38,6 +44,7 @@ class DemoContentSource : ContentSource {
         when (language) {
             Language.WAR -> DemoCards.warayTitles[topicId]
             Language.CEB -> BisayaTitles[topicId]
-            else -> null
+            Language.TGL -> TagalogTitles[topicId]
+            Language.ENG -> null
         } ?: EnglishTitles[topicId] ?: "[${topicId.name}]"
 }

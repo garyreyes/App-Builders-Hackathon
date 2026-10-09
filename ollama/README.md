@@ -1,4 +1,25 @@
-# Ollama demo bridge
+# Running the AI
+
+## On the phone (the real product: no laptop, airplane mode)
+
+The app runs **Gemma 4 E2B on the phone itself** with Google LiteRT-LM when the model file is in its storage.
+Nothing else is needed: no Ollama, no cable, no internet. Any build (debug or release) uses it.
+
+```powershell
+# Phone connected (USB, or Wireless debugging: adb pair <ip:port> <code>, then adb connect <ip:port>)
+cd android; ./gradlew :app:installDebug
+adb shell mkdir -p /sdcard/Android/data/ph.appbuilders.offlinehealth/files
+adb push ..\models\gemma-4-E2B-it.litertlm /sdcard/Android/data/ph.appbuilders.offlinehealth/files/
+```
+
+The model file is `litert-community/gemma-4-E2B-it-litert-lm/gemma-4-E2B-it.litertlm` on Hugging Face (2,588 MB,
+not gated). Restart the app: the top bar shows **AI starting…** while the model loads (about 25 s on the emulator),
+then **Offline** with the AI ready. If the file is missing, debug builds fall back to the Ollama bridge below.
+
+Measured on the emulator (x86_64, 4 GB RAM, CPU only): replies take 35-70 s. A real phone's GPU is expected to be
+much faster; not measured yet.
+
+# Ollama demo bridge (laptop)
 
 Debug builds of the app get their AI replies from **Ollama on the laptop**, over the USB cable. No internet is
 used: the phone can stay in airplane mode. Release builds don't include this (no INTERNET permission, per the PRD).

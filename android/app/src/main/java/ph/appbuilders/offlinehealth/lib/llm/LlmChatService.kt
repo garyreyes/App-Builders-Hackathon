@@ -26,7 +26,7 @@ import ph.appbuilders.offlinehealth.features.chat.ChatService
  * [prompt] builds each request's system prompt from the instant result (its checked card) and the user's language;
  * null keeps the Modelfile's own. Sampling lives in ollama/Modelfile.
  */
-class OllamaChatService(
+class LlmChatService(
     private val client: LlmClient,
     private val triage: (String, Language) -> ChatResult,
     private val scope: CoroutineScope,

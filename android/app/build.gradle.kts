@@ -17,7 +17,8 @@ android {
         versionName = "0.1.0"
 
         ndk {
-            abiFilters += "arm64-v8a"
+            // Phones are arm64; x86_64 lets the same APK run the on-phone AI path on the emulator.
+            abiFilters += listOf("arm64-v8a", "x86_64")
         }
 
         // Release stays on the fakes and has no INTERNET permission (PRD). See ollama/README.md.
@@ -57,6 +58,9 @@ dependencies {
     // Same lifecycle version Compose already resolves (2.8.7), so this adds no version bump.
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.core:core-ktx:1.10.1")
+
+    // On-phone AI runtime (Google LiteRT-LM), same pin as spikes/android-llm: 0.18.0 was days old on Oct 9.
+    implementation("com.google.ai.edge.litertlm:litertlm-android:0.17.1")
 
     testImplementation("junit:junit:4.13.2")
     // Android's org.json is a stub in JVM unit tests; this is the real one.

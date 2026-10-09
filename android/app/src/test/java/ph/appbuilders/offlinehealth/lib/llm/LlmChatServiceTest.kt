@@ -20,7 +20,7 @@ import ph.appbuilders.offlinehealth.domain.model.Language
 import ph.appbuilders.offlinehealth.domain.model.TopicCard
 import ph.appbuilders.offlinehealth.domain.model.TopicId
 
-class OllamaChatServiceTest {
+class LlmChatServiceTest {
 
     private class FakeClient(
         var reachable: Boolean = true,
@@ -47,9 +47,9 @@ class OllamaChatServiceTest {
     private val noCard = ChatResult(emptyList(), null, emptySet(), emptyList(), ai = null)
 
     private fun TestScope.service(client: LlmClient, result: ChatResult = withCard) =
-        OllamaChatService(client, { _, _ -> result }, backgroundScope, prompt = { r, l -> "prompt:${r.card?.topicId}:$l" })
+        LlmChatService(client, { _, _ -> result }, backgroundScope, prompt = { r, l -> "prompt:${r.card?.topicId}:$l" })
 
-    private suspend fun OllamaChatService.states(text: String = "q") =
+    private suspend fun LlmChatService.states(text: String = "q") =
         send(text, Language.WAR).toList().map { it.ai }
 
     @Test fun noTopicStillGetsAnAiAnswer() = runTest {
@@ -87,10 +87,10 @@ class OllamaChatServiceTest {
     @Test fun historyKeepsOnlyTheLastExchanges() = runTest {
         val client = FakeClient(chunks = listOf("Rest. "))
         val chat = service(client)
-        repeat(OllamaChatService.HISTORY_TURNS + 2) { chat.states("q$it") }
+        repeat(LlmChatService.HISTORY_TURNS + 2) { chat.states("q$it") }
         val last = client.sentHistories.last()
-        assertEquals(OllamaChatService.HISTORY_TURNS, last.size)
-        assertEquals("q${OllamaChatService.HISTORY_TURNS + 1 - OllamaChatService.HISTORY_TURNS}", last.first().user)
+        assertEquals(LlmChatService.HISTORY_TURNS, last.size)
+        assertEquals("q${LlmChatService.HISTORY_TURNS + 1 - LlmChatService.HISTORY_TURNS}", last.first().user)
     }
 
     @Test fun theSystemPromptIsBuiltFromTheResultAndLanguage() = runTest {
