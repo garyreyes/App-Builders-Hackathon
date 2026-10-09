@@ -7,7 +7,7 @@ In Antigravity 2.0, add this checkout folder to a Project and start the conversa
 ## Where the work is
 
 - Local checkout on this laptop: open the `App-Builders-Hackathon` folder already cloned in the workspace. Keep machine-specific paths out of the public repository.
-- Current local branch: `codex/waray-gpu-readiness`. Its shared review is [pull request #7](https://github.com/garyreyes/App-Builders-Hackathon/pull/7); check that branch rather than `main` for the latest model scripts and notes. Private CSVs, comparison files, and model weights remain on this laptop.
+- Current local branch: `codex/waray-gpu-readiness`. Run 04 changes are in [draft pull request #9](https://github.com/garyreyes/Buha.ai/pull/9). Earlier pull request #7 was merged before Run 04. Private CSVs, comparison files, and model weights remain on this laptop.
 - Keep `origin/docs/planning` intact. It describes a different laptop-first health-visit scope. Current owner direction is an offline Android Waray assistant; the product use case is still unresolved between collaborators.
 
 ## Owner decisions from this chat
@@ -68,4 +68,3 @@ In Antigravity 2.0, add this checkout folder to a Project and start the conversa
 1. Port `training/offline_knowledge.py` or its equivalent stable fact/policy rules into the Android local runtime, then load `waray-chat-v3-q8_0.gguf` on an API 28+ `arm64-v8a` phone in airplane mode.
 2. Measure offline response latency and memory footprint on the 6 GB RAM test device.
 3. Collect a fresh independent Waray test set, and arrange native Waray and clinician review before public or medical quality claims.
-
