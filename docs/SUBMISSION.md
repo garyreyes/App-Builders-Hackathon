@@ -34,11 +34,11 @@ Training: PyTorch, Hugging Face Transformers, PEFT, TRL, bitsandbytes, llama.cpp
 **APIs & cloud services:** none. No cloud AI API anywhere in the product.
 
 **Existing code & assets:** open-source libraries above; first-aid guidance based on DOH/WHO materials; Hugging Face
-dataset `ruslanmv/ai-medical-chatbot` used only in a separate training experiment (credited in PR #7). All app code
+dataset `ruslanmv/ai-medical-chatbot` used only in a separate training experiment (credited in docs/DATASET_CREDITS.md). All app code
 was written during the hackathon (see commit history).
 
 **AI development tools:** Claude Code (Anthropic) for the Android app; OpenAI Codex and Google Antigravity for the
-training scripts (teammate to confirm exact tools).
+training scripts (docs/ANTIGRAVITY_HANDOFF.md).
 
 ## Demo plan (5 minutes)
 

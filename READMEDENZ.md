@@ -28,8 +28,8 @@ See [the handoff contract](docs/handoff.md) for what both sides must agree on.
 ## Milestones
 
 1. **Text baseline:** choose a small, licensed chat model; run it on a computer and on the target Android phone. Record model version, phone RAM, response time, and whether it works in airplane mode.
-2. **Waray evaluation:** make a speaker-reviewed set of questions and expected behavior. Keep test examples separate from training examples. Record actual model replies and speaker judgments.
-3. **Improve the chat model:** use [the training workflow](training/README.md). Fine-tune Sailor2-1B-Chat with LoRA only after collecting reviewed Waray chat pairs. Deliver and retest a compressed GGUF model on the phone.
+2. **Waray evaluation:** make a held-out set of questions and expected behavior. AI review is allowed for an experimental prototype when labeled; native-speaker review is needed for a delivered quality claim. Keep test examples separate from training examples and record model replies and reviewer judgments.
+3. **Improve the chat model:** use [the training workflow](training/README.md). Fine-tune Sailor2-1B-Chat with LoRA only after collecting reviewed Waray chat pairs. An explicitly labeled AI-reviewed set is allowed for an experimental prototype; do not present it as native-speaker validation. Deliver and retest a compressed GGUF model on the phone.
 4. **Speech input:** collect or license Waray audio with accurate transcripts. Test an offline speech recognizer on the phone. Let users correct its transcript before the chat model receives it.
 
 ## Working together
@@ -44,7 +44,7 @@ See [the handoff contract](docs/handoff.md) for what both sides must agree on.
 - Draft project structure and app/model handoff are documented for both collaborators to review.
 - Target phone class: API 28+, 64-bit ARM, 6 GB RAM for the first test.
 - Sailor2 Waray dataset and 1B chat model located; see [source notes](docs/sailor2.md).
-- This computer has a GTX 1050 Ti with 4 GB video memory. A larger CUDA GPU is the practical training target. No model has been trained or tested yet.
-- Product use case decided: offline health helper ([PRD](docs/PRD.md)). Sailor2-1B baseline tested on the laptop; results in [PROJECT_FACTS](docs/PROJECT_FACTS.md).
+- The first PC check found a GTX 1050 Ti with 4 GB video memory. The training laptop has an RTX 4050 with 6 GB; see [workstation notes](docs/workstations.md). The Waray LoRA (Run 03) is trained and exported to GGUF; results are in [progress tracking](docs/PROGRESS_TRACKING.md).
+- Product use case decided: offline health helper ([PRD](docs/PRD.md)). Sailor2-1B baseline tested on the laptop; results in [PROJECT_FACTS](docs/PROJECT_FACTS.md). The demo app uses Gemma 4 E2B after a side-by-side test; the trained Waray model can be swapped in with `ollama/Modelfile.sailor2` (see [ollama/README.md](ollama/README.md)).
 
 Dataset handoff: add the file to a private location and tell the model collaborator its path, or attach it in the project chat. CSV, JSON, XLSX, TXT, and audio with transcripts can all be inspected. Include where it came from and what permission you have to use it. We will normalize its format after seeing the real data.

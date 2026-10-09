@@ -13,7 +13,8 @@ measurements or Waray speaker evaluation contradict it, and record the changed e
 | Text chat before speech input | Lets each model's errors be measured separately | Chosen |
 | **Product: offline health helper, 7 first-aid topics, 4 languages** | Owner's combined plan, 2026-10-09 ~22:50 | **Chosen** |
 | **Sailor2-1B-Chat GGUF on llama.cpp** | Owner's combined plan. Published Waray coverage, 0.74 GB Q4_K_M | **Chosen**; laptop baseline tested (see below), phone untested |
-| LoRA on reviewed Waray chat pairs | Adapts chat behavior without training a new foundation model | **Chosen**; ship only if it beats the baseline |
+| LoRA on reviewed Waray chat pairs | Adapts chat behavior without training a new foundation model | **Done (Run 03, @yezdenz, Oct 9–10):** 10/25 held-out prompts pass all four checks vs 4/25 baseline, naturalness 18/25 vs 9/25 (AI-reviewed). GGUF exported; not yet compared on the app's 10 questions (docs/PROGRESS_TRACKING.md) |
+| AI review for an experimental prototype | No fluent Waray reviewer available; owner asked for an AI-led path on Oct 9 | Active; reviewer model and method recorded per row. Native-speaker validation still needed before any quality claim |
 | Keyword glossary routes topics + danger signs | Sailor2-1B baseline failed JSON classification on Oct 9 | Chosen |
 | Deterministic guardrail on every model reply | Sailor2-1B baseline invented doses and suggested antibiotics on Oct 9 | Chosen |
 | App downloads the model once (SHA-256 verified) | Owner choice ("like `ollama pull`") | Chosen |

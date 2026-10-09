@@ -73,17 +73,17 @@ See [ollama/README.md](ollama/README.md).
 
 - **Gemma 4 E2B** (Google): the demo model. On-device file from `litert-community/gemma-4-E2B-it-litert-lm`;
   `gemma4:e2b` in Ollama for laptop mode.
-- **Sailor2-1B-Chat** (Sea AI Lab), with a **LoRA fine-tune on Waray** by @yezdenz (training code and results in
-  PR #7). Gemma replaced it in the demo after a 10-question side-by-side test (see "How we chose the model").
+- **Sailor2-1B-Chat** (Sea AI Lab), with a **LoRA fine-tune on Waray** by @yezdenz (code in [training/](training/README.md), results in
+  [docs/PROGRESS_TRACKING.md](docs/PROGRESS_TRACKING.md): 10/25 vs 4/25 held-out Waray prompts, AI-reviewed). Gemma replaced it in the demo after a 10-question side-by-side test (see "How we chose the model").
 - **Runtimes and frameworks:** Google LiteRT-LM 0.17.1 (Android), Ollama 0.40.1 (laptop), Kotlin 2.4,
   Jetpack Compose. Training: PyTorch, Transformers, PEFT, TRL, bitsandbytes, llama.cpp (GGUF export).
 - **Content:** first-aid cards based on DOH/WHO guidance. Waray, Bisaya, and Tagalog text is AI-drafted and **not
   yet reviewed by a native speaker** (marked on each card).
-- **Training data (PR #7):** AI-generated and AI-reviewed Waray pairs (honestly labeled), and
+- **Training data** ([credits](docs/DATASET_CREDITS.md)): AI-generated and AI-reviewed Waray pairs (honestly labeled), and
   [`ruslanmv/ai-medical-chatbot`](https://huggingface.co/datasets/ruslanmv/ai-medical-chatbot) for a separate
   medical experiment that is not in the app.
 - **AI development tools:** Claude Code (Anthropic) for the app; the training track used OpenAI Codex and Google
-  Antigravity (see PR #7's handoff notes).
+  Antigravity ([handoff notes](docs/ANTIGRAVITY_HANDOFF.md)).
 - **No cloud AI API is used anywhere** in the app.
 
 ## How we chose the model

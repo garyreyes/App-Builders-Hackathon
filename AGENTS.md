@@ -1,6 +1,6 @@
 # Instructions for agents working in this repository
 
-Read [README.md](README.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and [docs/DECISIONS.md](docs/DECISIONS.md) before changing the app or model workflow. This file is the project brief for any agent working with either collaborator. The repository documents decisions; the original chat history is not required to understand the project.
+Read [README.md](README.md) (judge-facing overview), [READMEDENZ.md](READMEDENZ.md) (collaboration and training notes), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and [docs/DECISIONS.md](docs/DECISIONS.md) before changing the app or model workflow. This file is the project brief for any agent working with either collaborator. The repository documents decisions; the original chat history is not required to understand the project.
 
 Read [docs/SCOPE.md](docs/SCOPE.md) and [docs/PRD.md](docs/PRD.md) first. **Combined plan (owner, 2026-10-09):** an offline Android health helper (7 first-aid topics, 4 languages) running Sailor2-1B GGUF on llama.cpp, with LoRA on reviewed Waray health chat pairs. The keyword glossary routes topics and danger signs, and a deterministic guardrail filters every model reply (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)). The `docs/planning` branch is an older concept. Preserve it but don't follow it.
 
@@ -15,7 +15,7 @@ Read [docs/SCOPE.md](docs/SCOPE.md) and [docs/PRD.md](docs/PRD.md) first. **Comb
 
 - Keep Android UI/runtime work separate from model and language work through the contract in [docs/handoff.md](docs/handoff.md).
 - Start by measuring the untouched model against a held-out Waray test set. Only fine-tune when reviewed examples and baseline results justify it. Follow [training/README.md](training/README.md).
-- Use native-speaker-reviewed Waray answers for supervised training. Preserve train/test separation, source attribution, and permissions. Sailor2's long generated Waray passages are not ready-made chat pairs.
+- The owner permits an explicitly labeled AI-reviewed prototype because no Waray speaker is available. Record the exact reviewing model and method in `reviewed_by`; never call AI review native-speaker review. Native-speaker evaluation is still needed before claiming Waray quality for a delivered app. Preserve train/test separation, source attribution, and permissions. Sailor2's long generated Waray passages are not ready-made chat pairs.
 - Speech recognition requires audio plus transcripts and its own evaluation. Chat fine-tuning does not improve transcription.
 - Keep large model files, raw audio, private data, secrets, and machine-specific paths out of Git. Keep small manifests, scripts, documentation, and shareable reviewed data in Git only when rights permit.
 
