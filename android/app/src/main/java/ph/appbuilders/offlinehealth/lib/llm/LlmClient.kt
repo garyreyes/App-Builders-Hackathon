@@ -14,8 +14,8 @@ interface LlmClient {
     suspend fun warmUp(): Boolean
 
     /**
-     * A reply to [userText] after the earlier [history], as the cumulative text so far.
-     * Throws [java.io.IOException] on failure.
+     * A reply to [userText] after the earlier [history], as the cumulative text so far. [system] replaces the
+     * model's default system prompt when given. Throws [java.io.IOException] on failure.
      */
-    fun reply(history: List<Exchange>, userText: String): Flow<String>
+    fun reply(system: String?, history: List<Exchange>, userText: String): Flow<String>
 }

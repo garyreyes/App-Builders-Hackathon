@@ -29,10 +29,12 @@ class OllamaChatServiceTest {
     ) : LlmClient {
         var replies = 0
         val sentHistories = mutableListOf<List<Exchange>>()
+        val sentSystems = mutableListOf<String?>()
         override suspend fun warmUp() = reachable
-        override fun reply(history: List<Exchange>, userText: String): Flow<String> = flow {
+        override fun reply(system: String?, history: List<Exchange>, userText: String): Flow<String> = flow {
             replies++
             sentHistories += history
+            sentSystems += system
             chunks.forEachIndexed { i, chunk ->
                 if (i == failAfter) throw IOException("connection reset")
                 emit(chunk)
@@ -45,7 +47,7 @@ class OllamaChatServiceTest {
     private val noCard = ChatResult(emptyList(), null, emptySet(), emptyList(), ai = null)
 
     private fun TestScope.service(client: LlmClient, result: ChatResult = withCard) =
-        OllamaChatService(client, { _, _ -> result }, backgroundScope)
+        OllamaChatService(client, { _, _ -> result }, backgroundScope, prompt = { r, l -> "prompt:${r.card?.topicId}:$l" })
 
     private suspend fun OllamaChatService.states(text: String = "q") =
         send(text, Language.WAR).toList().map { it.ai }
@@ -89,6 +91,12 @@ class OllamaChatServiceTest {
         val last = client.sentHistories.last()
         assertEquals(OllamaChatService.HISTORY_TURNS, last.size)
         assertEquals("q${OllamaChatService.HISTORY_TURNS + 1 - OllamaChatService.HISTORY_TURNS}", last.first().user)
+    }
+
+    @Test fun theSystemPromptIsBuiltFromTheResultAndLanguage() = runTest {
+        val client = FakeClient(chunks = listOf("Rest. "))
+        service(client).states()
+        assertEquals("prompt:CHILD_DIARRHEA:WAR", client.sentSystems.single())
     }
 
     @Test fun safeReplyStreamsWholeWordsThenFinishes() = runTest {

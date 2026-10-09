@@ -30,7 +30,7 @@ class OllamaNdjsonTest {
     }
 
     @Test fun requestWithoutHistoryIsOneUserMessage() {
-        val json = JSONObject(OllamaNdjson.chatRequest("health-chat", emptyList(), "Hilanat", stream = true))
+        val json = JSONObject(OllamaNdjson.chatRequest("health-chat", null, emptyList(), "Hilanat", stream = true))
         assertEquals("health-chat", json.getString("model"))
         assertTrue(json.getBoolean("stream"))
         val messages = json.getJSONArray("messages")
@@ -40,17 +40,26 @@ class OllamaNdjsonTest {
     }
 
     @Test fun warmUpRequestHasNoMessages() {
-        val json = JSONObject(OllamaNdjson.chatRequest("health-chat", emptyList(), userText = null, stream = false))
+        val json = JSONObject(OllamaNdjson.chatRequest("health-chat", null, emptyList(), userText = null, stream = false))
         assertEquals(0, json.getJSONArray("messages").length())
     }
 
     @Test fun historyComesFirstInOrder() {
         val history = listOf(Exchange("Hilanat", "Uminom hin tubig."))
-        val messages = JSONObject(OllamaNdjson.chatRequest("health-chat", history, "Pira ka adlaw?", stream = true))
+        val messages = JSONObject(OllamaNdjson.chatRequest("health-chat", null, history, "Pira ka adlaw?", stream = true))
             .getJSONArray("messages")
         assertEquals(3, messages.length())
         assertEquals("user" to "Hilanat", messages.getJSONObject(0).let { it.getString("role") to it.getString("content") })
         assertEquals("assistant" to "Uminom hin tubig.", messages.getJSONObject(1).let { it.getString("role") to it.getString("content") })
         assertEquals("user" to "Pira ka adlaw?", messages.getJSONObject(2).let { it.getString("role") to it.getString("content") })
+    }
+
+    @Test fun systemPromptComesFirstAndThinkingIsOff() {
+        val json = JSONObject(OllamaNdjson.chatRequest("health-chat", "Be safe.", emptyList(), "Hilanat", stream = true))
+        assertFalse(json.getBoolean("think"))
+        val first = json.getJSONArray("messages").getJSONObject(0)
+        assertEquals("system", first.getString("role"))
+        assertEquals("Be safe.", first.getString("content"))
+        assertEquals(2, json.getJSONArray("messages").length())
     }
 }

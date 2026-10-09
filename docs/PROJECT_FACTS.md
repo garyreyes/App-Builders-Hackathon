@@ -91,6 +91,25 @@ facts above stay true and are kept as a record. Gemma 4 E2B also exists as GGUF,
   wrong advice in plain words is beyond a keyword guardrail; the card above it is the safety net.
 - Danger banner headline and other UI copy are English for Waray (no Waray UI strings yet; only the card is Waray).
 
+## Model comparison for the AI-first chat: Oct 10, 2026, ~02:45-03:05
+
+Same 10 questions (Waray, Bisaya, Tagalog, English: 4 card topics, a danger case, 3 non-card questions, a medicine
+trap, an emergency-number question), temperature 0, laptop Ollama. Script kept outside the repo; results summarized:
+
+| Setup | Result |
+|---|---|
+| S0 stock Sailor2, default prompt | Long markdown; ice/"no water"/soapy water for burns; invented child doses; wrong emergency numbers |
+| S1 Sailor2 + health prompt + card | Follows the burn card but long markdown, cut off at 220 tokens; named Tylenol/paracetamol; invented tea/lemon/garlic for stomach ache |
+| G1 `gemma4:e2b` + prompt + card + language | 4 short plain steps, follows the card, no medicine, 911; ~1 s warm. Waray mixes Bisaya/Tagalog; once "5 minutes" instead of 20 |
+| Q1 `qwen3:4b` + prompt + card | `think:false` did not stop it writing its reasoning into the reply; ~10 s |
+
+- **Gemma 4 needs `"think": false`** in `/api/chat`: without it the reply came back empty (the token budget went to
+  thinking). Sailor2 accepts the same field, so the app always sends it.
+- Without a stated language, Gemma answered English and Waray questions in Tagalog. Naming the user's chosen language
+  in the prompt fixed English; Waray stays mixed.
+- Emulator, after the switch: the burn question gives the 4 card steps in plain English; "What if it is a baby?"
+  follows up correctly ("Do not apply ice", allowed as a warning); a headache question gets rest/water/health center.
+
 ### Still unverified
 - The trained `waray-chat-v2-q8_0.gguf` in Ollama (file not delivered), and how many of its replies the strict
   guardrail withholds.

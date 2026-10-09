@@ -17,6 +17,8 @@ import ph.appbuilders.offlinehealth.features.chat.ChatService
 import ph.appbuilders.offlinehealth.features.chat.InstantResult
 import ph.appbuilders.offlinehealth.features.chat.components.MenuAction
 import ph.appbuilders.offlinehealth.features.modelsetup.ModelSetupService
+import ph.appbuilders.offlinehealth.domain.model.Language
+import ph.appbuilders.offlinehealth.lib.llm.HealthPrompt
 import ph.appbuilders.offlinehealth.lib.llm.OllamaChatService
 import ph.appbuilders.offlinehealth.lib.llm.OllamaClient
 import ph.appbuilders.offlinehealth.lib.settings.LanguageSettings
@@ -47,6 +49,10 @@ class AppContainer(context: Context) {
                 client = OllamaClient(BuildConfig.OLLAMA_URL, BuildConfig.OLLAMA_MODEL),
                 triage = instantResult::of,
                 scope = appScope,
+                // Grounded on the checked English card (the reviewed source), answered in the user's language.
+                prompt = { result, language ->
+                    HealthPrompt.build(result.card?.let { demoContent.card(it.topicId, Language.ENG) }, language)
+                },
             )
         } else {
             null

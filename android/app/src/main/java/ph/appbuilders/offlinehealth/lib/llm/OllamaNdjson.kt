@@ -8,14 +8,20 @@ internal object OllamaNdjson {
 
     class Chunk(val content: String, val done: Boolean)
 
-    /** Earlier exchanges, then the new user message. Sampling settings live in ollama/Modelfile. */
-    fun chatRequest(model: String, history: List<Exchange>, userText: String?, stream: Boolean): String = JSONObject()
+    /**
+     * The system prompt (if any), earlier exchanges, then the new user message. Thinking is off: Gemma 4 otherwise
+     * spends the whole token budget thinking and returns nothing. Sampling settings live in ollama/Modelfile.
+     */
+    fun chatRequest(model: String, system: String?, history: List<Exchange>, userText: String?, stream: Boolean): String =
+        JSONObject()
         .put("model", model)
         .put("stream", stream)
+        .put("think", false)
         .put("keep_alive", KEEP_ALIVE)
         .put(
             "messages",
             JSONArray().apply {
+                if (system != null) put(message("system", system))
                 history.forEach {
                     put(message("user", it.user))
                     put(message("assistant", it.assistant))

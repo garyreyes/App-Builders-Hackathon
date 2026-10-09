@@ -30,6 +30,8 @@ measurements or Waray speaker evaluation contradict it, and record the changed e
 | **Demo AI via Ollama on the laptop, over USB (debug builds only)** | Trained GGUF not delivered yet and on-phone llama.cpp too risky before the Oct 10 freeze. Owner, Oct 10 ~01:45 | **Chosen for the demo**; release builds unchanged |
 | **Guardrail strict: no medicine names, forms, or doses** | PRD metric (0 reach the screen). Owner, Oct 10 ~01:45, after the trained model was taught OTC names | Chosen; revisit after the trained-model swap |
 | **Demo library: 3 topics with written cards; keyword triage routes only to them** | No placeholder may reach the demo screen (owner, Oct 10). Anything else gets the designed "not covered" answer | Chosen for the demo; the other 4 topics need content |
+| **AI-first chat: the model answers every message, with conversation memory** | Owner, Oct 10 ~02:30: "bullet points" don't show a local LLM. Cards stay as checked steps under the reply | Chosen for the demo |
+| **Demo model: Gemma 4 E2B, grounded on the checked card** | Oct 10 10-question comparison: only setup with short, safe, card-following answers | Chosen for the demo; trained Sailor2 re-tested when delivered |
 
 ## Details
 
@@ -120,3 +122,14 @@ measurements or Waray speaker evaluation contradict it, and record the changed e
   what the app can help with. Danger signs are detected in all four languages whatever the app language.
   "Dugo"/"blood" counts as blood in the stool only around diarrhea words. **Unreviewed:** the Waray card text and
   the new Bisaya burn/fever text are AI-drafted; each card's source line says so. Tagalog shows English cards.
+- **Decision 5, AI-first chat (Oct 10, ~02:30):** the owner judged that cards + a footnote reply don't read as a
+  local-LLM app. Now every message gets a model reply (even with no matching card), follow-ups see the last 3
+  answered exchanges, and the reply is the main bubble with the card folded into a "Checked first-aid steps" row.
+  The danger banner still comes first, and when the reply is withheld the full card shows instead.
+- **Decision 6, Gemma 4 E2B grounded on the card (Oct 10, ~03:00):** with the AI in front, stock Sailor2's errors
+  showed (ice on burns, "no water", UK/US emergency numbers, made-up remedies). A comparison of 4 setups on the same
+  10 questions picked `gemma4:e2b` + `HealthPrompt` (rules + checked English card + the user's chosen language).
+  **Cost:** the pitch is no longer "our fine-tuned Waray model"; Gemma's Waray mixes in Bisaya/Tagalog and once said
+  "5 minutes" instead of 20 for cooling a burn (the card below has the right step). The guardrail also now blocks
+  known first-aid myths and non-911 emergency numbers. The trained Sailor2 can be swapped in (`Modelfile.sailor2`)
+  and must beat Gemma on the same 10 questions to replace it.

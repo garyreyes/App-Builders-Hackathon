@@ -24,19 +24,26 @@ The top bar shows **AI ready** when the app reached Ollama, or **Basic mode** wh
 After fixing the connection, send another message (or use the debug menu's "reconnect to Ollama").
 `adb reverse` is lost when the cable is unplugged or adb restarts: run step 2 again.
 
-## Plug in the trained model
+## Which model
 
-The app always asks for `health-chat`, so swapping the model never touches the app.
+`ollama/Modelfile` (the default) is **Gemma 4 E2B** (`gemma4:e2b`, already pulled). It was chosen on Oct 10 after a
+10-question comparison of four setups (docs/PROJECT_FACTS.md): with the app's prompt and the checked card it gives
+short, safe answers that follow the card. Its Waray is weaker than Sailor2's (it mixes in Bisaya/Tagalog).
+
+The app sends the system prompt itself (`HealthPrompt.kt`: safety rules + the matched card's checked steps + the
+user's language) and turns thinking off, so the Modelfile's own `SYSTEM` is only a fallback.
+
+## Try the trained Waray model
+
+`ollama/Modelfile.sailor2` is the Sailor2 variant (ChatML template). To test the trained model:
 
 1. Put `waray-chat-v2-q8_0.gguf` in this `ollama/` folder (`*.gguf` is gitignored; never commit it).
 2. Check the file: `Get-FileHash ollama\waray-chat-v2-q8_0.gguf` must print
    `8471FC7ABAEF03A47FA900B068E8BF7A92B5971B9B997E77E3CE56A07FB0D277`.
-3. In `Modelfile`, change only the `FROM` line to `FROM ./waray-chat-v2-q8_0.gguf`.
-4. `ollama create health-chat -f ollama/Modelfile`, then send a message in the app.
+3. In `Modelfile.sailor2`, change only the `FROM` line to `FROM ./waray-chat-v2-q8_0.gguf`.
+4. `ollama create health-chat -f ollama/Modelfile.sailor2`, then send messages in the app. No app change.
+5. Switch back any time with `ollama create health-chat -f ollama/Modelfile`.
 
-Keep the Modelfile's `TEMPLATE`, `SYSTEM`, and `temperature 0` as they are: training sent no system message (so
-Sailor2's default system prompt was used) and the held-out scores were measured with greedy decoding. A different
-system prompt or temperature is an untested model. The handoff's suggested Modelfile changes both.
-
-After the swap, run about 10 demo questions and count how often the reply is withheld: the trained model was taught
-to name OTC medicines, which the strict guardrail hides. Changing that is an owner decision (`docs/DECISIONS.md`).
+Training used no system prompt, so the trained model under the app's prompt is untested. Before choosing it for
+the demo, run the same 10-question comparison and keep it only if it beats Gemma there. Its OTC-medicine habit
+will make the strict guardrail hide many replies.

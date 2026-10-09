@@ -23,12 +23,14 @@ import ph.appbuilders.offlinehealth.features.chat.ChatService
  * The AI chat: every message gets a model reply (owner, Oct 10: the AI is the product), with the instant danger
  * check and topic card from [triage] alongside it. Every piece of reply text passes [Guardrail] before it is
  * emitted; the first failure hides the whole reply. Follow-ups see the last [HISTORY_TURNS] answered exchanges.
- * System prompt and sampling live in ollama/Modelfile.
+ * [prompt] builds each request's system prompt from the instant result (its checked card) and the user's language;
+ * null keeps the Modelfile's own. Sampling lives in ollama/Modelfile.
  */
 class OllamaChatService(
     private val client: LlmClient,
     private val triage: (String, Language) -> ChatResult,
     private val scope: CoroutineScope,
+    private val prompt: (ChatResult, Language) -> String? = { _, _ -> null },
 ) : ChatService {
 
     private val status = MutableStateFlow(AiStatus.STARTING)
@@ -72,7 +74,7 @@ class OllamaChatService(
             return@flow
         }
         emit(base.copy(ai = AiReplyState.Thinking))
-        streamReply(base, text)
+        streamReply(base, text, prompt(base, language))
     }
 
     private fun firstAiState(): AiReplyState = when (status.value) {
@@ -81,11 +83,11 @@ class OllamaChatService(
         AiStatus.BASIC -> AiReplyState.BasicMode
     }
 
-    private suspend fun FlowCollector<ChatResult>.streamReply(base: ChatResult, text: String) {
+    private suspend fun FlowCollector<ChatResult>.streamReply(base: ChatResult, text: String, system: String?) {
         val dangerShown = base.dangers.isNotEmpty()
         var full = ""
         try {
-            client.reply(history.toList(), text).collect { partial ->
+            client.reply(system, history.toList(), text).collect { partial ->
                 full = ReplyText.plain(partial)
                 // Only whole words are shown, and exactly what is shown has passed the guardrail.
                 val shown = ReplyText.visiblePrefix(full)

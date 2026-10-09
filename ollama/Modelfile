@@ -1,26 +1,13 @@
 # health-chat: the model the debug app calls through Ollama. See ollama/README.md.
-# Stand-in until the trained model arrives. To swap, change only this FROM line, e.g.
-#   FROM ./waray-chat-v2-q8_0.gguf
-FROM hf.co/bartowski/Sailor2-1B-Chat-GGUF:Q4_K_M
+# Gemma 4 E2B, chosen on Oct 10 after a 10-question comparison (docs/PROJECT_FACTS.md): short, safe answers that
+# follow the checked card. Gemma's own chat template (from the model) is used; don't add a ChatML TEMPLATE here.
+# The app sends the system prompt with every message (HealthPrompt.kt: rules + checked card + user's language)
+# and turns thinking off; SYSTEM below is only a fallback for other callers.
+FROM gemma4:e2b
 
-# Explicit, so a GGUF swap can't change the prompt format. ChatML, identical to Sailor2's HF chat template.
-TEMPLATE """{{- range $i, $_ := .Messages }}
-{{- $last := eq (len (slice $.Messages $i)) 1 -}}
-<|im_start|>{{ .Role }}
-{{ .Content }}{{ if not $last }}<|im_end|>
-{{ end }}
-{{- if and (ne .Role "assistant") $last }}<|im_end|>
-<|im_start|>assistant
-{{ end }}
-{{- end }}"""
+SYSTEM """You are an offline first-aid helper for families in the Philippines. Be short: at most 4 simple steps in plain words. Never name a medicine, never give a dose, never diagnose. If anything sounds serious, tell them to go to the nearest health center now. The emergency number in the Philippines is 911."""
 
-# Sailor2's own default system prompt, word for word. Training (training/local_cli.py) sent no system message,
-# so HF's template inserted exactly this text into every example; using it here matches what was scored.
-SYSTEM """You are an AI assistant named Sailor2, created by Sea AI Lab. As an AI assistant, you can answer questions in English, Chinese, and Southeast Asian languages such as Burmese, Cebuano, Ilocano, Indonesian, Javanese, Khmer, Lao, Malay, Sundanese, Tagalog, Thai, Vietnamese, and Waray. Your responses should be friendly, unbiased, informative, detailed, and faithful."""
-
-# Greedy decoding, as in the evaluation (do_sample=False). Short replies: the card carries the steps.
+# Greedy decoding, as in the comparison. Replies run ~40-90 tokens; the cap only stops runaways.
 PARAMETER temperature 0
-PARAMETER num_predict 160
-PARAMETER num_ctx 2048
-PARAMETER stop "<|im_start|>"
-PARAMETER stop "<|im_end|>"
+PARAMETER num_predict 220
+PARAMETER num_ctx 4096
