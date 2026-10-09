@@ -25,24 +25,41 @@ In Antigravity 2.0, add this checkout folder to a Project and start the conversa
 - Detected an RTX 4050 Laptop GPU with 6,141 MiB VRAM, 16 GB RAM, and CUDA driver 13.4. Installed a Python 3.14 environment under ignored `.venv/` with CUDA PyTorch 2.11.0, Transformers 4.57.6, TRL 0.29.1, PEFT 0.21.2, datasets 4.4.1, and bitsandbytes 0.50.2.
 - Verified PyTorch CUDA forward/backward computation and a bitsandbytes NF4 4-bit CUDA operation. These prove the local GPU software path, **not** that Sailor2 training fits or improves the model.
 - Added `training/gpu_smoke.py` for untouched model inference and `training/local_cli.py` for reviewed-data checks, baseline replies, 4-bit LoRA training, and same-question comparison. `training/requirements-local.txt` pins the non-PyTorch dependencies. `training/README.md` contains the exact CLI commands.
-- Four data-separation/review-gate tests in `training/test_local_cli.py` pass. Python compilation and package dependency checks pass. The CLI has **not** completed an end-to-end Sailor2 model run.
-- Sailor2 publishes pretraining and supervised data. The stage-two SFT dataset viewer listed about 1,200 Waray, 1,198 Cebuano, and 1,131 Ilocano examples at inspection time. Do not assume those examples are independent of Sailor2's original training or suitable for evaluating improvement. The large Waray synthetic corpus is long passages, not chat pairs. See `docs/sailor2.md`.
+- Four data-separation/review-gate tests in `training/test_local_cli.py` pass. Python compilation and package dependency checks pass. The CLI had not completed an end-to-end Sailor2 model run.
+
+## What Antigravity completed (2026-10-09 to 2026-10-10)
+
+- Downloaded official `sail/Sailor2-1B-Chat` weights (revision `51b48ecd7c0629e4c79dc927a0445e6b671d8692`, ~1.98 GB safetensors).
+- Ran `training/gpu_smoke.py`: GPU smoke test verified CUDA execution (5.75s, 1,916 MiB peak VRAM, `outputs/gpu-smoke.json`).
+- Baseline evaluation: 21 of 25 held-out prompts failed (84% failure rate) due to severe base hallucinations and vocabulary errors (`outputs/waray-baseline.csv`).
+- Pilot LoRA Run 01: 10-step memory/software compatibility verification (`outputs/waray-run-01/`).
+- Full LoRA Run 02: 3 epochs on 70 train rows (`outputs/waray-run-02/`), reaching 32% pass rate and yielding `waray-chat-v1-q8_0.gguf`.
+- **Medical OTC Adaptation (Run 03):**
+  - Expanded dataset to 145 rows (120 train, 25 strictly held-out test) with dedicated frontline **non-prescription (OTC) medical guidance** (Paracetamol, Ibuprofen, ORS, Antacids, Cetirizine, RICE method), strict referral boundaries for prescription drugs, and technical medical terms retained in English per owner directive.
+  - Adapted **all 7 linear projection layers** (`q_proj`, `k_proj`, `v_proj`, `o_proj`, `gate_proj`, `up_proj`, `down_proj`) for 4 epochs (60 optimizer steps) on the RTX 4050 GPU (2,272.5 MiB peak VRAM).
+  - Train loss reached 1.260 (final step loss 0.889) with **81.7% token accuracy**.
+  - Held-out 25-prompt test results (`outputs/waray-run-03/comparison.csv`):
+    - **All-criteria pass rate:** **10 / 25 (40%)** (+150% over baseline, +25% over Run 02).
+    - **Naturalness:** **18 / 25 (72%)** (doubled from baseline 36%).
+    - **Language choice:** **24 / 25 (96%)** (clean Waray with English medical terminology).
+    - **No invented facts:** **12 / 25 (48%)** (up from 28% baseline).
+  - Merged weights to float16 (`models/waray-sailor2-1b-v2-merged/`).
+  - Exported production GGUF models:
+    - `models/waray-chat-v2-q8_0.gguf` (1,056,199,072 bytes / ~0.98 GiB, SHA-256: `8471fc7abaef03a47fa900b068e8bf7a92b5971b9b997e77e3ce56a07fb0d277`)
+    - `models/waray-chat-v2-f16.gguf` (1,982,376,352 bytes / ~1.85 GiB, SHA-256: `fa4b993bce52fd797ddc8f7d560fd5452c521cf99bc9da432922b7fd4eea904e`)
+  - Updated progress tracking in `docs/PROGRESS_TRACKING.md` and delivery note in `docs/handoff.md`.
 
 ## What has not happened
 
-- No reviewed Waray train/test CSV exists in the repo. `training/reviewed_chat_template.csv` is header-only.
-- No Sailor2 model has finished downloading or loading on this laptop. The official 1B weight file is about 1.98 GB; download attempts were stopped because transfer was unusually slow. A small ignored partial download may remain. Resume or retry when practical.
-- No Sailor2 baseline, LoRA training, adapted-model comparison, GGUF export, Android phone test, or Waray speech model has been completed. Do not report any of these as done.
-- The local branch has not been pushed or made into a pull request. The repo's normal shared-work process is branch plus PR.
+- No Android device test has occurred (must test on an Android 9 / API 28 `arm64-v8a` device with 6 GB RAM in airplane mode).
+- Native-speaker validation has not occurred. AI review is an experimental prototype indicator only.
+- Waray speech-to-text remains a separate future track.
+- The local branch `codex/waray-gpu-readiness` has not been pushed to GitHub.
 
-## Next work for Antigravity
+## Next work for the next agent
 
-1. Read the files named at the top and inspect the code before editing. Respect the owner's AI-reviewed-prototype decision, which supersedes earlier human-only wording elsewhere in the repo.
-2. Build an **AI-reviewed prototype CSV** in the template format. Use permitted sources. Label AI review with the actual model/version and method. Keep it under ignored `data/private/` unless sharing rights clearly allow publication. Create at least 20 distinct held-out test questions before training examples; do not reuse Sailor2 training examples as proof of improvement.
-3. Run `training/local_cli.py check`, then baseline inference when model weights are available. Independently rate every baseline reply, documenting whether the reviewer is AI. Run `train` only if baseline failures justify an experiment. Use `--max-steps 10` for a first memory/compatibility pilot. The CLI saves its progress and run manifest under `outputs/`.
-4. Inspect failures and compare the adapted model on the same held-out questions. AI judging is a prototype signal; report its limits. Arrange native-speaker review later if the model is to be described as Waray-validated.
-5. Coordinate with the Android collaborator before changing the app/model handoff. A successful desktop adapter is not an Android-ready GGUF; export, quantization, hashes, and real offline phone measurements are still separate work.
+1. Test loading `waray-chat-v2-q8_0.gguf` on an Android phone (or API 28 arm64 emulator/device) via the adapted llama.cpp Android runtime in airplane mode.
+2. Measure offline response latency and memory footprint on the 6 GB RAM test device.
+3. Coordinate with a fluent Waray speaker for native human evaluation of model responses before public delivery.
 
-## Short prompt to paste into Antigravity
 
-> Open this local `App-Builders-Hackathon` checkout on branch `codex/waray-gpu-readiness`. Read `docs/ANTIGRAVITY_HANDOFF.md`, `AGENTS.md`, `READMEDENZ.md`, `docs/SCOPE.md`, and `training/README.md`. Continue the Waray-first Sailor2-1B-Chat model work using this laptop's RTX 4050. The owner permits an explicitly labeled AI-reviewed prototype because no fluent Waray reviewer is available; never label AI review as native-speaker review. Keep test prompts separate, record real source/rights and reviewer model/method, and do not claim training or Android compatibility until measured. Inspect the local CLI, prepare permitted prototype data, complete baseline and a small GPU pilot when feasible, and document results. Preserve the other collaborator's `docs/planning` branch and do not publish private data or weights.

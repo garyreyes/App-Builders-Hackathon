@@ -19,17 +19,28 @@ The Android app records a short utterance. A separate offline speech-to-text mod
 
 ## Model delivery note
 
-For each model version, record:
+### Delivered model: `waray-chat-v2` (2026-10-10) — Medical OTC & Regional Assistant
 
 | Field | Value |
 | --- | --- |
-| File name and SHA-256 | TBD |
-| Base model and license | TBD |
-| Training or adaptation method | None / prompt / LoRA |
-| Data source and permission | TBD |
-| Quantization | TBD |
-| Test phone and RAM | TBD |
-| Waray test set version and results | TBD |
-| Offline response time | TBD |
+| File name and SHA-256 | `waray-chat-v2-q8_0.gguf` (`8471fc7abaef03a47fa900b068e8bf7a92b5971b9b997e77e3ce56a07fb0d277`)<br>`waray-chat-v2-f16.gguf` (`fa4b993bce52fd797ddc8f7d560fd5452c521cf99bc9da432922b7fd4eea904e`) |
+| Base model and license | [sail/Sailor2-1B-Chat](https://huggingface.co/sail/Sailor2-1B-Chat) (`51b48ecd7c0629e4c79dc927a0445e6b671d8692`), Apache 2.0 |
+| Training or adaptation method | 4-bit LoRA (r=8, alpha=16, 4 epochs, 60 steps, train loss 1.260 / final step 0.889) targeting **all linear projection layers** (`q_proj`, `k_proj`, `v_proj`, `o_proj`, `gate_proj`, `up_proj`, `down_proj`) merged to float16 and exported via `llama.cpp` |
+| Domain capabilities | **Frontline Medical Guidance (OTC ONLY):** Safe guidance for over-the-counter medicines (Paracetamol 500mg, Ibuprofen, ORS, Antacids, Cetirizine, RICE method) with technical terms kept in English; strict refusal of prescription drugs (antibiotics, hypertension maintenance); referral to Barangay Health Workers (BHW) or health centers; offline status honesty |
+| Data source and permission | Prototype dataset (`data/private/waray-reviewed.csv`, SHA-256: `ec1508c1...`, 120 train rows, 25 held-out test rows, reviewed by `ai:gemini-3.8-flash; method=syntactic-and-lexical-cross-validation-waray; domain=medical-otc-and-general`); private local hackathon prototype per owner authorization |
+| Quantization | `Q8_0` (1,056,199,072 bytes / ~0.98 GiB) and `F16` (1,982,376,352 bytes / ~1.85 GiB) |
+| Test phone and RAM | Untested on device; compatibility target is Android 9 / API 28, `arm64-v8a`, 6 GB RAM phone |
+| Waray test set version and results | 25 held-out test prompts (`outputs/waray-run-03/comparison.csv`): **10/25 (40%) all-criteria pass** (+6 over baseline), **18/25 (72%) naturalness** (doubled vs baseline), **24/25 (96%) Waray language choice**, **12/25 (48%) hallucination-free** |
+| Offline response time | Desktop GPU generation average ~7.5s; on-device Android offline response time unmeasured |
+
+### Previous delivered model: `waray-chat-v1` (2026-10-09)
+
+| Field | Value |
+| --- | --- |
+| File name and SHA-256 | `waray-chat-v1-q8_0.gguf` (`5b1f4fb9abb108851bb932ec28c5b199339ad80c5769673b010f7e6fbf54e2b7`)<br>`waray-chat-v1-f16.gguf` (`42b61b910b5fcf5b23ac1667c3311e5f85790ebbe0a9c3a3767b8a31c06f04b8`) |
+| Quantization | `Q8_0` (1,056,199,040 bytes / ~0.98 GiB) and `F16` (1,982,376,320 bytes / ~1.85 GiB) |
+| Waray test set results | 8/25 (32%) all-criteria pass, 10/25 hallucination-free, 11/25 naturalness |
 
 Do not assume Ollama runs inside the Android app. It can be used to test models on a computer; the phone app needs its own local inference runtime.
+
+

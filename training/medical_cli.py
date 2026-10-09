@@ -1,7 +1,11 @@
-"""Local, unattended Sailor2 baseline and LoRA training commands.
+"""Local, unattended Medical Chatbot baseline and LoRA training commands.
 
-No model API or Codex calls are made. Data and model artifacts stay on this PC.
-Run ``python training/local_cli.py --help`` from the repository root.
+Dataset Credit:
+    ruslanmv/ai-medical-chatbot (https://huggingface.co/datasets/ruslanmv/ai-medical-chatbot)
+    Created by Ruslan Magana Vsevolodovna.
+
+No paid model API calls are made. Data and model artifacts stay on this PC.
+Run ``python training/medical_cli.py --help`` from the repository root.
 """
 
 import argparse
@@ -20,6 +24,10 @@ DATA_COLUMNS = ("id", "split", "user_message", "assistant_reply", "reviewed_by",
 RATING_COLUMNS = ("correctness", "naturalness", "language_choice", "no_invented_facts")
 BASELINE_COLUMNS = (
     "id", "user_message", "ideal_reply", "baseline_reply", *RATING_COLUMNS, "reviewed_by"
+)
+DATASET_CREDIT = (
+    "ruslanmv/ai-medical-chatbot (https://huggingface.co/datasets/ruslanmv/ai-medical-chatbot) "
+    "by Ruslan Magana Vsevolodovna"
 )
 
 
@@ -102,50 +110,48 @@ def sha256(path: Path) -> str:
 
 def gpu() -> None:
     import torch
-
     if not torch.cuda.is_available():
-        raise RuntimeError("CUDA is unavailable; install a CUDA PyTorch build and check the NVIDIA driver")
-    print(f"GPU: {torch.cuda.get_device_name(0)} ({torch.cuda.get_device_properties(0).total_memory // 2**20} MiB)", flush=True)
+        raise RuntimeError("CUDA is required for local model training")
+    print(f"GPU: {torch.cuda.get_device_name(0)} ({round(torch.cuda.get_device_properties(0).total_memory / 2**20)} MiB)")
 
 
-def load_model(model_id: str, quantized: bool = False, tokenizer=None):
+def load_model(name: str, quantized: bool = False, tokenizer=None):
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
-    if tokenizer is None:
-        tokenizer = AutoTokenizer.from_pretrained(model_id)
-    options = {"dtype": torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16}
+    tokenizer = tokenizer or AutoTokenizer.from_pretrained(name)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    load_kwargs = {
+        "device_map": "cuda",
+        "torch_dtype": torch.float16,
+    }
     if quantized:
-        options["quantization_config"] = BitsAndBytesConfig(
+        load_kwargs["quantization_config"] = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=options["dtype"],
             bnb_4bit_use_double_quant=True,
+            bnb_4bit_compute_dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16,
         )
-        options["device_map"] = {"": 0}
-    model = AutoModelForCausalLM.from_pretrained(model_id, **options)
-    if not quantized:
-        model.to("cuda")
-    model.eval()
-    return tokenizer, model
+    return tokenizer, AutoModelForCausalLM.from_pretrained(name, **load_kwargs)
 
 
-def answer(tokenizer, model, prompt: str, max_new_tokens: int) -> tuple[str, float]:
+def answer(tokenizer, model, message: str, max_new_tokens: int) -> tuple[str, float]:
     import torch
 
     inputs = tokenizer.apply_chat_template(
-        [{"role": "user", "content": prompt}],
+        [{"role": "user", "content": message}],
         add_generation_prompt=True,
         return_tensors="pt",
     ).to("cuda")
-    torch.cuda.synchronize()
     started = time.perf_counter()
-    with torch.inference_mode():
+    with torch.no_grad():
         result = model.generate(
             inputs,
             max_new_tokens=max_new_tokens,
             do_sample=False,
-            pad_token_id=tokenizer.eos_token_id,
+            pad_token_id=tokenizer.pad_token_id,
+            eos_token_id=tokenizer.eos_token_id,
         )
     torch.cuda.synchronize()
     reply = tokenizer.decode(result[0][inputs.shape[-1] :], skip_special_tokens=True).strip()
@@ -168,7 +174,7 @@ def baseline(args, test: list[dict]) -> None:
             **{rating: "" for rating in RATING_COLUMNS},
             "reviewed_by": "",
         })
-        print(f"Baseline {position}/{len(test)}: {seconds}s", flush=True)
+        print(f"Medical Baseline {position}/{len(test)}: {seconds}s", flush=True)
     write_csv(args.output, BASELINE_COLUMNS, rows)
     manifest = {
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -177,7 +183,8 @@ def baseline(args, test: list[dict]) -> None:
         "data_sha256": sha256(args.data),
         "test_count": len(test),
         "max_new_tokens": args.max_new_tokens,
-        "note": "Desktop language baseline; independent ratings and Android phone test still required",
+        "dataset_credit": DATASET_CREDIT,
+        "note": "Medical chat baseline; independent ratings and phone test still required",
     }
     args.output.with_suffix(".json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     print(f"Review the replies and fill yes/no ratings in {args.output}")
@@ -223,6 +230,7 @@ def train(args, train_rows: list[dict], test: list[dict], reviewed: list[dict]) 
         "max_length": args.max_length,
         "max_steps": args.max_steps,
         "epochs": args.epochs,
+        "dataset_credit": DATASET_CREDIT,
     }, indent=2), encoding="utf-8")
 
     class Progress(TrainerCallback):
@@ -299,7 +307,7 @@ def train(args, train_rows: list[dict], test: list[dict], reviewed: list[dict]) 
             "adapted_language_choice": "",
             "adapted_no_invented_facts": "",
         })
-        print(f"Adapted {position}/{len(test)}: {seconds}s", flush=True)
+        print(f"Medical Adapted {position}/{len(test)}: {seconds}s", flush=True)
     columns = (*BASELINE_COLUMNS, "adapted_reply", "adapted_seconds", *[f"adapted_{x}" for x in RATING_COLUMNS])
     write_csv(args.output / "comparison.csv", columns, comparison)
     manifest = {
@@ -320,10 +328,11 @@ def train(args, train_rows: list[dict], test: list[dict], reviewed: list[dict]) 
         "max_length": args.max_length,
         "max_steps": args.max_steps,
         "epochs": args.epochs,
-        "note": "Adapter and comparison need independent review and Android phone testing; AI review does not establish native-speaker quality",
+        "dataset_credit": DATASET_CREDIT,
+        "note": "Medical adapter and comparison; phone testing and clinical validation required",
     }
     run_file.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    print(f"Adapter: {adapter}\nComparison for independent review: {args.output / 'comparison.csv'}")
+    print(f"Medical Adapter: {adapter}\nComparison: {args.output / 'comparison.csv'}")
 
 
 def main() -> int:
@@ -331,21 +340,21 @@ def main() -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     for name in ("check", "baseline", "train"):
         command = commands.add_parser(name)
-        command.add_argument("--data", type=Path, required=True, help="reviewed chat CSV outside public Git when private")
+        command.add_argument("--data", type=Path, default=Path("data/private/medical-chat-reviewed.csv"))
         if name != "check":
             command.add_argument("--model", default="sail/Sailor2-1B-Chat")
-            command.add_argument("--max-new-tokens", type=int, default=128)
+            command.add_argument("--max-new-tokens", type=int, default=150)
             command.add_argument("--output", type=Path, required=True)
         if name == "train":
             command.add_argument("--baseline-review", type=Path, required=True)
-            command.add_argument("--max-length", type=int, default=256)
-            command.add_argument("--max-steps", type=int, default=-1, help="-1 trains for one epoch")
-            command.add_argument("--epochs", type=int, default=1, help="training epochs when --max-steps is -1")
+            command.add_argument("--max-length", type=int, default=320)
+            command.add_argument("--max-steps", type=int, default=-1, help="-1 trains for specified epochs")
+            command.add_argument("--epochs", type=int, default=3, help="training epochs")
             command.add_argument("--all-linear", action="store_true", help="target all linear projection layers")
     args = parser.parse_args()
     try:
         train_rows, test = reviewed_data(args.data)
-        print(f"Validated {len(train_rows)} reviewed train and {len(test)} held-out test examples")
+        print(f"Validated {len(train_rows)} reviewed train and {len(test)} held-out test examples for medical training")
         if args.command == "baseline":
             baseline(args, test)
         elif args.command == "train":

@@ -48,11 +48,46 @@ Fill a private copy of `training/reviewed_chat_template.csv` with reviewed examp
 Have an independent reviewer read every baseline reply in `outputs/waray-baseline.csv`, enter `yes` or `no` in the four rating columns, and fill `reviewed_by` with a person or an explicit AI model/method identifier. Do not put reviewed test rows into training. If the baseline has at least one recorded failure, the following single command trains a 4-bit LoRA adapter with short sequences and batch size one, then produces same-question responses for comparison:
 
 ```powershell
-.\.venv\Scripts\python.exe training\local_cli.py train --data data\private\waray-reviewed.csv --baseline-review outputs\waray-baseline.csv --output outputs\waray-run-01
+.\.venv\Scripts\python.exe training\local_cli.py train --data data\private\waray-reviewed.csv --baseline-review outputs\waray-baseline.csv --output outputs\waray-run-02 --epochs 3
 ```
 
-The CLI refuses incomplete reviews, changed test prompts, reused output paths, and training/test prompt overlap. Its default is one training epoch; `--max-steps 10` can cap a pilot run. An independent reviewer must rate the adapted replies in `outputs/waray-run-01/comparison.csv`. AI ratings support an experimental comparison only; do not call them native-speaker validation. This desktop process does not replace the GGUF and offline Android phone checks. For Cebuano and Ilocano, use separate reviewed CSV files and output folders after the Waray run is evaluated.
+The CLI refuses incomplete reviews, changed test prompts, reused output paths, and training/test prompt overlap. `--max-steps 10` can cap a pilot run, or `--epochs <N>` sets full training epochs. An independent reviewer must rate the adapted replies in `outputs/<run>/comparison.csv`. AI ratings support an experimental comparison only; do not call them native-speaker validation.
+
+### Adapter merge and GGUF export for Android
+
+Once an adapted run is evaluated, merge the LoRA weights into the base model and convert to GGUF format:
+
+```powershell
+# 1. Merge LoRA adapter into base model weights
+.\.venv\Scripts\python.exe training\merge_adapter.py --adapter outputs\waray-run-02\adapter --output models\waray-sailor2-1b-merged
+
+# 2. Convert to GGUF (Q8_0 for compact high quality ~1.05 GB, or F16 ~1.98 GB)
+.\.venv\Scripts\python.exe .venv\llama.cpp\convert_hf_to_gguf.py models\waray-sailor2-1b-merged --outfile models\waray-chat-v1-q8_0.gguf --outtype q8_0
+.\.venv\Scripts\python.exe .venv\llama.cpp\convert_hf_to_gguf.py models\waray-sailor2-1b-merged --outfile models\waray-chat-v1-f16.gguf --outtype f16
+```
+
+This desktop process does not replace the offline Android phone checks. Test on an API 28+ 6 GB phone in airplane mode. For Cebuano and Ilocano, use separate reviewed CSV files and output folders after the Waray run is evaluated.
+
+### Separate medical chatbot pipeline (`ruslanmv/ai-medical-chatbot`)
+
+For clinical medical dialogues, a dedicated pipeline ingests and curates dialogues from [`ruslanmv/ai-medical-chatbot`](https://huggingface.co/datasets/ruslanmv/ai-medical-chatbot) by Ruslan Magana Vsevolodovna (see [`docs/DATASET_CREDITS.md`](../docs/DATASET_CREDITS.md)):
+
+```powershell
+# 1. Prepare and filter medical dataset
+.\.venv\Scripts\python.exe training\prepare_medical_data.py
+
+# 2. Check dataset integrity
+.\.venv\Scripts\python.exe training\medical_cli.py check --data data\private\medical-chat-reviewed.csv
+
+# 3. Train medical LoRA adapter
+.\.venv\Scripts\python.exe training\medical_cli.py train --data data\private\medical-chat-reviewed.csv --baseline-review outputs\medical-baseline.csv --output outputs\medical-run-01 --epochs 3 --all-linear --max-length 384
+
+# 4. Merge adapter and export GGUF
+.\.venv\Scripts\python.exe training\merge_adapter.py --adapter outputs\medical-run-01\adapter --output models\medical-sailor2-1b-merged
+.\.venv\Scripts\python.exe .venv\llama.cpp\convert_hf_to_gguf.py models\medical-sailor2-1b-merged --outfile models\medical-chat-v1-q8_0.gguf --outtype q8_0
+```
 
 ## Separate speech track
 
 Speech recognition needs recorded Waray audio and matching transcripts. Text chat fine-tuning will not make a microphone understand Waray.
+

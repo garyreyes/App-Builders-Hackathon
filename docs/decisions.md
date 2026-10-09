@@ -6,12 +6,13 @@
 | Android 9 / API 28 minimum, `arm64-v8a` | Extends the possible device range while matching llama.cpp's documented native Android 28 build | Chosen; app integration untested |
 | 6 GB RAM phone as first target | User's representative midrange phone | Chosen; performance untested |
 | Text chat before speech input | Lets each model's errors be measured separately | Chosen |
-| Sailor2-1B-Chat as baseline | Small model with published Waray coverage and GGUF quantizations | Candidate; quality untested |
-| LoRA on reviewed Waray chat pairs | Adapts chat behavior without training a new foundation model | Planned; no approved training set yet |
-| AI review for an experimental prototype | No fluent Waray reviewer is currently available; the owner asked for an AI-led path on 2026-10-09 | Allowed if reviewer model/method are recorded and results are not presented as native-speaker-validated |
+| Sailor2-1B-Chat as baseline | Small model with published Waray coverage and GGUF quantizations | Baseline measured on desktop GPU (2026-10-09): 21/25 failures across 25 held-out prompts; heavy factual hallucination and vocabulary confusion |
+| LoRA on reviewed Waray chat pairs | Adapts chat behavior without training a new foundation model | Active prototype; 10-step pilot executed on RTX 4050 (2,165 MiB peak VRAM, loss 2.266, 6/25 pass vs 4/25 baseline). Full training and GGUF export pending |
+| AI review for an experimental prototype | No fluent Waray reviewer is currently available; the owner asked for an AI-led path on 2026-10-09 | Active prototype; reviewing model and method recorded in data and reviews; native-speaker validation still required |
 | Separate speech-to-text model | Text chat training cannot learn audio transcription | Planned |
 | Keep model weights and raw/private data out of Git | Repository stays reviewable and respects sharing limits | Active |
 | Android and model training are the current build direction | Project owner confirmed this on 2026-10-09 after reviewing the laptop-first PRD | Chosen; product use case still open |
 | Preserve the `docs/planning` branch | It records the other collaborator's BHW prenatal-visit concept and differs from the current build direction | Active |
 
 Revisit a decision when real device measurements or Waray speaker evaluation contradict it. Record the changed evidence and date here.
+
