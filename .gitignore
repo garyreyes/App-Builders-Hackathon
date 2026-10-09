@@ -31,3 +31,13 @@ dist/
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# Android
+.gradle/
+build/
+.idea/
+local.properties
+*.apk
+*.aab
+*.litertlm
+*.task
