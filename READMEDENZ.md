@@ -44,7 +44,7 @@ See [the handoff contract](docs/handoff.md) for what both sides must agree on.
 - Draft project structure and app/model handoff are documented for both collaborators to review.
 - Target phone class: API 28+, 64-bit ARM, 6 GB RAM for the first test.
 - Sailor2 Waray dataset and 1B chat model located; see [source notes](docs/sailor2.md).
-- This computer has a GTX 1050 Ti with 4 GB video memory. A larger CUDA GPU is the practical training target. No model has been trained or tested yet.
+- The first PC check found a GTX 1050 Ti with 4 GB video memory. The current training laptop has an RTX 4050 with 6 GB; see [workstation notes](docs/workstations.md). No model has been trained or evaluated yet.
 - Product use case remains open: [the scope note](docs/SCOPE.md) records the difference between this Android plan and the BHW prenatal-visit PRD.
 
 Dataset handoff: add the file to a private location and tell the model collaborator its path, or attach it in the project chat. CSV, JSON, XLSX, TXT, and audio with transcripts can all be inspected. Include where it came from and what permission you have to use it. We will normalize its format after seeing the real data.

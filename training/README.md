@@ -20,7 +20,11 @@ Make the test rows first and keep them out of training. Include natural greeting
 4. **Compare:** run the same untouched test questions against the baseline and adapted models. Keep the adapted model only if speaker ratings improve without harming basic chat behavior.
 5. **Deliver:** merge the LoRA adapter into the base model, export GGUF, quantize to Q4_K_M, record a SHA-256 hash and license, then measure memory, speed, and offline operation on the 6 GB phone.
 
-The local PC detected for this project has a GTX 1050 Ti with 4 GB video memory. That is a tight and unverified setup for modern LoRA tooling. Plan to use a larger CUDA GPU for the first fine-tuning run; the evaluation and data preparation can happen locally.
+The earlier PC check found a GTX 1050 Ti with 4 GB VRAM. The current training laptop has an RTX 4050 with 6 GB VRAM; see [workstation notes](../docs/workstations.md). LoRA on Sailor2-1B-Chat is plausible here but has not yet been validated by a training run.
+
+To check GPU inference without changing model weights, create a local `.venv`, install a CUDA-enabled PyTorch build plus `transformers`, `accelerate`, and `huggingface_hub`, then run `python training/gpu_smoke.py` from the repository root. The script downloads the official 1B chat model into the normal Hugging Face cache and writes its revision, GPU memory use, timing, and sample reply to ignored `outputs/gpu-smoke.json`. Its English sample prompt only verifies that the software path works; it is not the required Waray baseline evaluation.
+
+Sailor2 also publishes [stage-two supervised data](https://huggingface.co/datasets/sailor2/sailor2-sft-stage2). Its dataset viewer reports 1,200 Waray, 1,198 Cebuano, and 1,131 Ilocano examples. This is useful reference material, but published examples are not automatically native-speaker-reviewed or approved for this app. Check source rights, sample quality, and training/test overlap before use. No reviewed training or held-out test rows are in this repository yet.
 
 ## Separate speech track
 

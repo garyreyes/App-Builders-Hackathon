@@ -19,6 +19,6 @@ Do not commit `.gguf` weights, raw recordings, private data, API keys, or whole 
 
 Give the agent this repository and the following task prompt, adjusting the final sentence to the actual assignment:
 
-> Read `AGENTS.md`, `README.md`, `docs/SCOPE.md`, `docs/architecture.md`, and `docs/handoff.md`. The current build direction is a fully offline Waray Android app for API 28+ on 64-bit ARM, with a 6 GB phone as the first test target. Sailor2-1B-Chat GGUF is the candidate baseline. The `docs/planning` branch contains a different laptop-first PRD; preserve it and flag product requirements that need a team decision. Work on the Android app and local model runtime. Measure compatibility on a real device, and document findings. Your current assignment is: [specific task].
+> Read `AGENTS.md`, `READMEDENZ.md`, `docs/SCOPE.md`, `docs/architecture.md`, and `docs/handoff.md`. The current build direction is a fully offline Waray Android app for API 28+ on 64-bit ARM, with a 6 GB phone as the first test target. Sailor2-1B-Chat GGUF is the candidate baseline. The `docs/planning` branch contains a different laptop-first PRD; preserve it and flag product requirements that need a team decision. Work on the Android app and local model runtime. Measure compatibility on a real device, and document findings. Your current assignment is: [specific task].
 
 The agent should inspect the actual code and device before claiming a feature works. The written project brief is enough to start even if it cannot see this chat.

@@ -1,6 +1,6 @@
 # Instructions for agents working in this repository
 
-Read [README.md](README.md), [docs/architecture.md](docs/architecture.md), and [docs/decisions.md](docs/decisions.md) before changing the app or model workflow. This file is the project brief for any agent working with either collaborator. The repository documents decisions; the original chat history is not required to understand the project.
+Read [READMEDENZ.md](READMEDENZ.md), [docs/architecture.md](docs/architecture.md), and [docs/decisions.md](docs/decisions.md) before changing the app or model workflow. This file is the project brief for any agent working with either collaborator. The repository documents decisions; the original chat history is not required to understand the project.
 
 Read [docs/SCOPE.md](docs/SCOPE.md) before following other planning documents. The user confirmed Android and model training as the current build on 2026-10-09. The `docs/planning` branch has a laptop-only health-visit PRD with conflicting scope; do not silently substitute that scope. Preserve that collaborator's branch and ask the two teammates to reconcile product details that remain open.
 
