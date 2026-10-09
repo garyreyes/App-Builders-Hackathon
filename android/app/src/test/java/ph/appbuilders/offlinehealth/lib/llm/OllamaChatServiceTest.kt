@@ -28,9 +28,11 @@ class OllamaChatServiceTest {
         val failAfter: Int? = null,
     ) : LlmClient {
         var replies = 0
+        val sentHistories = mutableListOf<List<Exchange>>()
         override suspend fun warmUp() = reachable
-        override fun reply(userText: String): Flow<String> = flow {
+        override fun reply(history: List<Exchange>, userText: String): Flow<String> = flow {
             replies++
+            sentHistories += history
             chunks.forEachIndexed { i, chunk ->
                 if (i == failAfter) throw IOException("connection reset")
                 emit(chunk)
@@ -48,12 +50,45 @@ class OllamaChatServiceTest {
     private suspend fun OllamaChatService.states(text: String = "q") =
         send(text, Language.WAR).toList().map { it.ai }
 
-    @Test fun noTopicMeansNoAiAndNoModelCall() = runTest {
-        val client = FakeClient(chunks = listOf("Hello "))
-        val results = service(client, noCard).send("toothache", Language.ENG).toList()
-        assertEquals(1, results.size)
-        assertNull(results.single().ai)
+    @Test fun noTopicStillGetsAnAiAnswer() = runTest {
+        val client = FakeClient(chunks = listOf("Magpahuway ", "Magpahuway ngan uminom hin tubig."))
+        val states = service(client, noCard).states("Masakit an akon ulo")
+        assertEquals(AiReplyState.Done("Magpahuway ngan uminom hin tubig."), states.last())
+        assertEquals(1, client.replies)
+    }
+
+    @Test fun noTopicInBasicModeHasNoModelCall() = runTest {
+        val client = FakeClient(chunks = listOf("Hello. "))
+        val chat = service(client, noCard)
+        chat.useBasicMode()
+        assertEquals(AiReplyState.BasicMode, chat.states().last())
         assertEquals(0, client.replies)
+    }
+
+    @Test fun followUpsSeeEarlierAnsweredTurns() = runTest {
+        val client = FakeClient(chunks = listOf("Drink water. "))
+        val chat = service(client)
+        chat.states("first question")
+        chat.states("follow-up")
+        assertEquals(emptyList<Exchange>(), client.sentHistories[0])
+        assertEquals(listOf(Exchange("first question", "Drink water.")), client.sentHistories[1])
+    }
+
+    @Test fun withheldTurnsAreLeftOutOfTheHistory() = runTest {
+        val client = FakeClient(chunks = listOf("Give paracetamol. "))
+        val chat = service(client)
+        chat.states("first")
+        chat.states("second")
+        assertEquals(emptyList<Exchange>(), client.sentHistories[1])
+    }
+
+    @Test fun historyKeepsOnlyTheLastExchanges() = runTest {
+        val client = FakeClient(chunks = listOf("Rest. "))
+        val chat = service(client)
+        repeat(OllamaChatService.HISTORY_TURNS + 2) { chat.states("q$it") }
+        val last = client.sentHistories.last()
+        assertEquals(OllamaChatService.HISTORY_TURNS, last.size)
+        assertEquals("q${OllamaChatService.HISTORY_TURNS + 1 - OllamaChatService.HISTORY_TURNS}", last.first().user)
     }
 
     @Test fun safeReplyStreamsWholeWordsThenFinishes() = runTest {

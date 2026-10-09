@@ -8,15 +8,19 @@ internal object OllamaNdjson {
 
     class Chunk(val content: String, val done: Boolean)
 
-    /** One single-turn user message, as in training. Sampling settings live in ollama/Modelfile. */
-    fun chatRequest(model: String, userText: String?, stream: Boolean): String = JSONObject()
+    /** Earlier exchanges, then the new user message. Sampling settings live in ollama/Modelfile. */
+    fun chatRequest(model: String, history: List<Exchange>, userText: String?, stream: Boolean): String = JSONObject()
         .put("model", model)
         .put("stream", stream)
         .put("keep_alive", KEEP_ALIVE)
         .put(
             "messages",
             JSONArray().apply {
-                if (userText != null) put(JSONObject().put("role", "user").put("content", userText))
+                history.forEach {
+                    put(message("user", it.user))
+                    put(message("assistant", it.assistant))
+                }
+                if (userText != null) put(message("user", userText))
             },
         )
         .toString()
@@ -32,6 +36,8 @@ internal object OllamaNdjson {
         val content = json.optJSONObject("message")?.optString("content").orEmpty()
         return Chunk(content, json.optBoolean("done", false))
     }
+
+    private fun message(role: String, content: String) = JSONObject().put("role", role).put("content", content)
 
     /** Keeps the model in memory between questions during the demo. */
     private const val KEEP_ALIVE = "30m"

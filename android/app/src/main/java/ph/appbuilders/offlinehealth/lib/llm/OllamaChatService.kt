@@ -20,9 +20,10 @@ import ph.appbuilders.offlinehealth.domain.model.Language
 import ph.appbuilders.offlinehealth.features.chat.ChatService
 
 /**
- * Real AI replies from an [LlmClient], under the instant card from [triage] (ARCHITECTURE "Send pipeline").
- * Every piece of reply text passes [Guardrail] before it is emitted; the first failure hides the whole reply.
- * The prompt is the user's text only, exactly as in training (system prompt + sampling live in ollama/Modelfile).
+ * The AI chat: every message gets a model reply (owner, Oct 10: the AI is the product), with the instant danger
+ * check and topic card from [triage] alongside it. Every piece of reply text passes [Guardrail] before it is
+ * emitted; the first failure hides the whole reply. Follow-ups see the last [HISTORY_TURNS] answered exchanges.
+ * System prompt and sampling live in ollama/Modelfile.
  */
 class OllamaChatService(
     private val client: LlmClient,
@@ -37,6 +38,9 @@ class OllamaChatService(
 
     /** True when the user picked basic mode; then a send must not quietly reconnect. */
     private var basicByChoice = false
+
+    /** Answered exchanges only: a withheld reply (and its question) never goes back into the prompt. */
+    private val history = ArrayDeque<Exchange>()
 
     init {
         warmUp()
@@ -61,10 +65,6 @@ class OllamaChatService(
 
     override fun send(text: String, language: Language): Flow<ChatResult> = flow {
         val base = triage(text, language)
-        if (base.card == null) {
-            emit(base) // nothing matched: the fixed "not covered" text, no AI (ARCHITECTURE step 3)
-            return@flow
-        }
         if (status.value == AiStatus.BASIC && !basicByChoice) warmUp() // the laptop may be back
         emit(base.copy(ai = firstAiState()))
         if (status.first { it != AiStatus.STARTING } == AiStatus.BASIC) {
@@ -85,7 +85,7 @@ class OllamaChatService(
         val dangerShown = base.dangers.isNotEmpty()
         var full = ""
         try {
-            client.reply(text).collect { partial ->
+            client.reply(history.toList(), text).collect { partial ->
                 full = ReplyText.plain(partial)
                 // Only whole words are shown, and exactly what is shown has passed the guardrail.
                 val shown = ReplyText.visiblePrefix(full)
@@ -102,9 +102,23 @@ class OllamaChatService(
             return
         }
         val reply = ReplyText.finish(full)
-        val ai = if (Guardrail.allows(reply, dangerShown)) AiReplyState.Done(reply) else AiReplyState.Withheld
-        emit(base.copy(ai = ai))
+        if (!Guardrail.allows(reply, dangerShown)) {
+            emit(base.copy(ai = AiReplyState.Withheld))
+            return
+        }
+        remember(Exchange(text, reply))
+        emit(base.copy(ai = AiReplyState.Done(reply)))
+    }
+
+    private fun remember(exchange: Exchange) {
+        history.addLast(exchange)
+        while (history.size > HISTORY_TURNS) history.removeFirst()
     }
 
     private class Rejected : Exception()
+
+    companion object {
+        /** Three short exchanges fit the 2048-token context with room for the reply. */
+        const val HISTORY_TURNS = 3
+    }
 }

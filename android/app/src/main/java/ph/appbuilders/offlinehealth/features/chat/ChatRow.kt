@@ -8,6 +8,7 @@ import ph.appbuilders.offlinehealth.domain.model.TopicSummary
 import ph.appbuilders.offlinehealth.features.chat.components.AiReply
 import ph.appbuilders.offlinehealth.features.chat.components.AlsoAboutChips
 import ph.appbuilders.offlinehealth.features.chat.components.ChatIntro
+import ph.appbuilders.offlinehealth.features.chat.components.CheckedSteps
 import ph.appbuilders.offlinehealth.features.chat.components.DangerBanner
 import ph.appbuilders.offlinehealth.features.chat.components.ExampleChips
 import ph.appbuilders.offlinehealth.features.chat.components.FirstAidCard
@@ -25,7 +26,9 @@ fun ChatRow(item: ChatItem, topics: List<TopicSummary>, actions: ChatActions, co
         ChatItem.Shortcuts -> TopicShortcuts(text[UiKey.CHAT_TOPICS], topics, actions.onTopic, modifier)
         is ChatItem.User -> UserMessage(item.text, modifier)
         is ChatItem.Banner -> DangerBanner(item.dangers, actions.onCall911, modifier, compact)
-        is ChatItem.Card -> FirstAidCard(item.card, item.matched, modifier)
+        is ChatItem.Card ->
+            if (item.compact) CheckedSteps(item.card, onOpen = { actions.onTopic(item.card.topicId) }, modifier)
+            else FirstAidCard(item.card, item.matched, modifier)
         is ChatItem.NotCovered -> NotCoveredCard(modifier)
         is ChatItem.NotCoveredTopics -> TopicShortcuts(text[UiKey.NOT_COVERED_TOPICS], topics, actions.onTopic, modifier)
         is ChatItem.Ai -> AiReply(item.state, onDownloadAi = actions.onOpenSettings, modifier = modifier)

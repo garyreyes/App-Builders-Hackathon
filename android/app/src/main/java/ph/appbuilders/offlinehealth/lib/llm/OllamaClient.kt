@@ -21,16 +21,16 @@ class OllamaClient(private val baseUrl: String, private val model: String) : Llm
     override suspend fun warmUp(): Boolean = withContext(Dispatchers.IO) {
         try {
             // Empty messages: Ollama only loads the model.
-            post(OllamaNdjson.chatRequest(model, userText = null, stream = false)).use { it.readText() }
+            post(OllamaNdjson.chatRequest(model, emptyList(), userText = null, stream = false)).use { it.readText() }
             true
         } catch (_: IOException) {
             false
         }
     }
 
-    override fun reply(userText: String): Flow<String> = flow {
+    override fun reply(history: List<Exchange>, userText: String): Flow<String> = flow {
         val text = StringBuilder()
-        post(OllamaNdjson.chatRequest(model, userText, stream = true)).use { reader ->
+        post(OllamaNdjson.chatRequest(model, history, userText, stream = true)).use { reader ->
             while (true) {
                 currentCoroutineContext().ensureActive()
                 val line = reader.readLine() ?: break

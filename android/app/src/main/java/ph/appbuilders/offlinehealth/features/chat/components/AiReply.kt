@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -51,22 +52,35 @@ import ph.appbuilders.offlinehealth.app.theme.rememberReducedMotion
 import ph.appbuilders.offlinehealth.domain.model.AiReplyState
 
 /**
- * The on-device AI's reply under the card: plain text, no bubble, so it reads as secondary to the card.
- * Withheld is a quiet pointer back to the card, never an error. Previews live in AiReplyPreviews.kt.
+ * The AI's reply, the main answer in the chat (owner, Oct 10): a left-aligned bubble opposite the user's.
+ * Withheld is a quiet line, never an error. Previews live in AiReplyPreviews.kt.
  */
 @Composable
 fun AiReply(state: AiReplyState, onDownloadAi: () -> Unit, modifier: Modifier = Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (state !is AiReplyState.BasicMode) AiLabel()
         when (state) {
-            AiReplyState.Thinking -> ThinkingLine()
-            AiReplyState.WarmingUp -> WarmingLine()
-            is AiReplyState.Streaming -> ReplyText(state.text, streaming = true)
-            is AiReplyState.Done -> ReplyText(state.text, streaming = false)
-            AiReplyState.Withheld -> QuietLine(R.drawable.ic_arrow_upward, LocalUiText.current[UiKey.AI_WITHHELD])
+            AiReplyState.Thinking -> Bubble { ThinkingLine() }
+            AiReplyState.WarmingUp -> Bubble { WarmingLine() }
+            is AiReplyState.Streaming -> Bubble { ReplyText(state.text, streaming = true) }
+            is AiReplyState.Done -> Bubble { ReplyText(state.text, streaming = false) }
+            AiReplyState.Withheld -> QuietLine(R.drawable.ic_info, LocalUiText.current[UiKey.AI_WITHHELD])
             AiReplyState.BasicMode -> BasicModeBlock(onDownloadAi)
         }
     }
+}
+
+/** Mirrors the user's bubble (UserMessage.kt): same radius and padding, tail on the left, the lighter surface. */
+private val AiBubbleShape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomEnd = 20.dp, bottomStart = 6.dp)
+
+@Composable
+private fun Bubble(content: @Composable () -> Unit) {
+    Box(
+        Modifier
+            .fillMaxWidth(0.94f)
+            .background(Palette.Surface, AiBubbleShape)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+    ) { content() }
 }
 
 @Composable
