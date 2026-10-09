@@ -26,6 +26,33 @@ To check GPU inference without changing model weights, create a local `.venv`, i
 
 Sailor2 also publishes [stage-two supervised data](https://huggingface.co/datasets/sailor2/sailor2-sft-stage2). Its dataset viewer reports 1,200 Waray, 1,198 Cebuano, and 1,131 Ilocano examples. This is useful reference material, but published examples are not automatically native-speaker-reviewed or approved for this app. Check source rights, sample quality, and training/test overlap before use. No reviewed training or held-out test rows are in this repository yet.
 
+## Unattended local CLI
+
+`local_cli.py` performs its computation entirely on this laptop. It makes no Codex or paid model API calls, so leaving a training command running uses no chat tokens. It writes progress to the terminal and saves the adapter, a run manifest, and a comparison CSV under ignored `outputs/`. The command never uploads model weights or examples.
+
+On this Windows laptop, install the reproducible environment once from the repository root:
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\python.exe -m pip install torch==2.11.0+cu128 --index-url https://download.pytorch.org/whl/cu128
+.\.venv\Scripts\python.exe -m pip install -r training\requirements-local.txt
+```
+
+Fill a private copy of `training/reviewed_chat_template.csv` with speaker-reviewed examples. Include at least 20 separate `test` questions and keep them out of `train`. Every row needs a reviewer code, source, and rights note. The CLI checks these fields and duplicate prompts; a human still needs to verify the language quality, privacy, and actual permission.
+
+```powershell
+.\.venv\Scripts\python.exe training\local_cli.py check --data data\private\waray-reviewed.csv
+.\.venv\Scripts\python.exe training\local_cli.py baseline --data data\private\waray-reviewed.csv --output outputs\waray-baseline.csv
+```
+
+Have a fluent reviewer read every baseline reply in `outputs/waray-baseline.csv`, enter `yes` or `no` in the four rating columns, and fill `reviewed_by`. Do not put reviewed test rows into training. If the baseline has at least one recorded failure, the following single command trains a 4-bit LoRA adapter with short sequences and batch size one, then produces same-question responses for human comparison:
+
+```powershell
+.\.venv\Scripts\python.exe training\local_cli.py train --data data\private\waray-reviewed.csv --baseline-review outputs\waray-baseline.csv --output outputs\waray-run-01
+```
+
+The CLI refuses incomplete reviews, changed test prompts, reused output paths, and training/test prompt overlap. Its default is one training epoch; `--max-steps 10` can cap a pilot run. The reviewer must rate the adapted replies in `outputs/waray-run-01/comparison.csv`. This desktop process does not replace the GGUF and offline Android phone checks. For Cebuano and Ilocano, use separate reviewed CSV files and output folders after the Waray run is evaluated.
+
 ## Separate speech track
 
 Speech recognition needs recorded Waray audio and matching transcripts. Text chat fine-tuning will not make a microphone understand Waray.
