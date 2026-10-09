@@ -27,6 +27,8 @@ measurements or Waray speaker evaluation contradict it, and record the changed e
 | **Room for lists, DataStore for single values, one repository** | History and people grow; name/health center don't | Chosen; Room + KSP on AGP 9 unverified |
 | **Health center from the user, 911 from content, never the model** | A 1B model would invent phone numbers | Chosen |
 | **Store birth month, compute the group** | A stored "baby" goes stale and would apply the wrong danger rules | Chosen |
+| **Demo AI via Ollama on the laptop, over USB (debug builds only)** | Trained GGUF not delivered yet and on-phone llama.cpp too risky before the Oct 10 freeze. Owner, Oct 10 ~01:45 | **Chosen for the demo**; release builds unchanged |
+| **Guardrail strict: no medicine names, forms, or doses** | PRD metric (0 reach the screen). Owner, Oct 10 ~01:45, after the trained model was taught OTC names | Chosen; revisit after the trained-model swap |
 
 ## Details
 
@@ -89,3 +91,25 @@ measurements or Waray speaker evaluation contradict it, and record the changed e
 - **Decision 6, birth month, not group:** the group is computed each time (`PersonGroup.of`), so danger rules stay
   age-correct as children grow.
 - **Lesson reused:** the dropped BHW plan (`docs/planning`) stored full patient records. Here every stored field is optional and minimal.
+
+## Demo AI bridge and strict guardrail (Oct 10, 2026, ~01:45)
+
+- **Context:** the trained model (`waray-chat-v2-q8_0.gguf`, PR #7) was not delivered, and the app ran on fakes
+  only. The feature freeze is 07:00.
+- **Decision 1, Ollama on the laptop for the demo:** debug builds call `health-chat` in the laptop's Ollama through
+  `adb reverse` (`ollama/README.md`). No internet is involved, but the model runs beside the phone, not on it; the
+  pitch must say so. Release builds keep the fakes and no INTERNET permission. **Alternative rejected tonight:**
+  llama.cpp on the phone (about 4–5 h of native work). It stays the target. The swap point is `LlmClient`.
+- **Decision 2, the trained model is a laptop-side swap:** the app always asks for `health-chat`; replacing the
+  Modelfile's `FROM` line plugs in any GGUF. The Modelfile pins Sailor2's default system prompt and greedy decoding
+  because that is how the LoRA was trained and scored (verified: Ollama's chat prompt matches HF's template token for
+  token on warm runs). The handoff's own SYSTEM prompt and `temperature 0.7` were not used: untested settings.
+- **Decision 3, strict guardrail:** any medicine name, medicine form ("tablet", "syrup"), dose word or number+unit,
+  named diagnosis, phone number, or (with a danger shown) downplaying phrase hides the whole reply. Streaming shows
+  whole words only and holds back a trailing number until the next word is known, so nothing unsafe flashes on
+  screen. Terms are a Kotlin object (`GuardrailTerms`) until `guardrail_terms.json` exists. **Evidence:** on the
+  emulator, the stock model answered "what medicine and how many mg" with invented "10-20 mg/kg" child doses; the
+  reply was withheld. **Open:** Run 03 was trained to name OTC medicines, so many of its replies will be withheld.
+  Allowing OTC names without doses is an owner decision to make after measuring that.
+- **Known limit:** the guardrail can't catch wrong advice that uses only ordinary words. The stock model told a
+  Waray user to put a burned hand in hot water. The card above every reply is the safety net.

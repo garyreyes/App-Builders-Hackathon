@@ -66,3 +66,25 @@ facts above stay true and are kept as a record. Gemma 4 E2B also exists as GGUF,
 - llama.cpp Android build for **API 28 / arm64-v8a** (official sample is minSdk 33).
 - Sailor2-1B (and the adapted model) speed and memory on the **6 GB demo phone**, in airplane mode.
 - Whether LoRA on reviewed pairs fixes language choice, invented doses, and off-topic refusals.
+
+## Ollama demo bridge: Oct 10, 2026, ~01:30–02:15
+
+- Ollama 0.40.1 on the laptop. `hf.co/bartowski/Sailor2-1B-Chat-GGUF:Q4_K_M` (738 MB) is the stand-in model.
+- **Ollama's built-in template for that GGUF adds no system prompt.** HF's Sailor2 template inserts a default system
+  prompt when none is given, and training (`training/local_cli.py`, PR #7) sent none. `ollama/Modelfile` sets that
+  default text explicitly. Check: `/api/chat` and a hand-built HF-format prompt via `/api/generate` with `raw:true`
+  gave the same prompt token count (125) and identical output on warm runs. The very first (cold) run differed.
+- Stock model, laptop RTX 4050: 160 tokens in ~1.4–7 s depending on whether the model was already loaded.
+- Stock model answers are poor and sometimes dangerous: "organize activities" for child diarrhea; hot water for a
+  burn; invented "10-20 mg/kg" child doses for a medicine question (withheld by the guardrail on the emulator).
+- Emulator (API 37, x86_64) with `adb reverse tcp:11434 tcp:11434`: setup skipped, pill "AI ready", the card shows
+  instantly and the reply streams under it. Removing the reverse → next send withheld, pill "basic mode"; restoring
+  it → next send "AI ready" again.
+- Android requires the INTERNET permission even for `127.0.0.1`, and API 28+ blocks cleartext by default. Both are
+  granted in `src/debug/` only; the release APK has no INTERNET permission (checked with `aapt dump permissions`).
+- Sailor2 writes markdown (`**`, `###`); `ReplyText.plain` strips it because the UI shows plain text.
+
+### Still unverified
+- The trained `waray-chat-v2-q8_0.gguf` in Ollama (file not delivered), and how many of its replies the strict
+  guardrail withholds.
+- A real phone over USB (only the emulator was tested).
