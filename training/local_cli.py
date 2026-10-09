@@ -177,7 +177,7 @@ def baseline(args, test: list[dict]) -> None:
         "data_sha256": sha256(args.data),
         "test_count": len(test),
         "max_new_tokens": args.max_new_tokens,
-        "note": "Desktop language baseline; human ratings and Android phone test still required",
+        "note": "Desktop language baseline; independent ratings and Android phone test still required",
     }
     args.output.with_suffix(".json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     print(f"Review the replies and fill yes/no ratings in {args.output}")
@@ -313,10 +313,10 @@ def train(args, train_rows: list[dict], test: list[dict], reviewed: list[dict]) 
         "software": software,
         "max_length": args.max_length,
         "max_steps": args.max_steps,
-        "note": "Adapter and comparison need speaker review and Android phone testing before delivery",
+        "note": "Adapter and comparison need independent review and Android phone testing; AI review does not establish native-speaker quality",
     }
     run_file.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    print(f"Adapter: {adapter}\nComparison for human review: {args.output / 'comparison.csv'}")
+    print(f"Adapter: {adapter}\nComparison for independent review: {args.output / 'comparison.csv'}")
 
 
 def main() -> int:

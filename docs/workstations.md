@@ -6,7 +6,7 @@
 2. Read `AGENTS.md`, `training/README.md`, and `docs/testing.md`.
 3. Check the laptop's GPU model and VRAM before selecting LoRA settings. Install a supported Python, PyTorch/CUDA, Transformers, TRL, PEFT, and datasets environment there when training data is ready. Record versions and commands in the training run notes.
 4. Keep the raw dataset and model downloads outside Git. Save reproducible scripts, configuration, dataset manifests, evaluation results, and model hashes in the repository when sharing rights allow.
-5. Run the untouched baseline and speaker-reviewed evaluation before any fine-tuning. The current project has no completed training run.
+5. Run the untouched baseline and independent evaluation before any fine-tuning. The owner permits clearly labeled AI review for a prototype; native-speaker quality remains unverified. The current project has no completed training run.
 
 ## GPU checked on 2026-10-09
 

@@ -28,8 +28,8 @@ See [the handoff contract](docs/handoff.md) for what both sides must agree on.
 ## Milestones
 
 1. **Text baseline:** choose a small, licensed chat model; run it on a computer and on the target Android phone. Record model version, phone RAM, response time, and whether it works in airplane mode.
-2. **Waray evaluation:** make a speaker-reviewed set of questions and expected behavior. Keep test examples separate from training examples. Record actual model replies and speaker judgments.
-3. **Improve the chat model:** use [the training workflow](training/README.md). Fine-tune Sailor2-1B-Chat with LoRA only after collecting reviewed Waray chat pairs. Deliver and retest a compressed GGUF model on the phone.
+2. **Waray evaluation:** make a held-out set of questions and expected behavior. AI review is allowed for an experimental prototype when labeled; native-speaker review is needed for a delivered quality claim. Keep test examples separate from training examples and record model replies and reviewer judgments.
+3. **Improve the chat model:** use [the training workflow](training/README.md). Fine-tune Sailor2-1B-Chat with LoRA only after collecting reviewed Waray chat pairs. An explicitly labeled AI-reviewed set is allowed for an experimental prototype; do not present it as native-speaker validation. Deliver and retest a compressed GGUF model on the phone.
 4. **Speech input:** collect or license Waray audio with accurate transcripts. Test an offline speech recognizer on the phone. Let users correct its transcript before the chat model receives it.
 
 ## Working together

@@ -37,7 +37,7 @@ The published llama.cpp Android Studio sample currently declares API 33 as its m
 ## Model path
 
 1. Baseline: Sailor2-1B-Chat, initially using a Q4_K_M GGUF for phone testing.
-2. Evaluation: held-out speaker-written Waray prompts and human ratings.
+2. Evaluation: held-out Waray prompts and recorded ratings. The owner permits labeled AI review for a prototype; native-speaker validation is still needed for a delivered quality claim.
 3. If needed: supervised LoRA adaptation of the original model with reviewed Waray chat pairs on a training computer.
 4. Delivery: a new versioned GGUF plus the information listed in [docs/handoff.md](handoff.md).
 

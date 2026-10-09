@@ -15,7 +15,7 @@ Read [docs/SCOPE.md](docs/SCOPE.md) before following other planning documents. T
 
 - Keep Android UI/runtime work separate from model and language work through the contract in [docs/handoff.md](docs/handoff.md).
 - Start by measuring the untouched model against a held-out Waray test set. Only fine-tune when reviewed examples and baseline results justify it. Follow [training/README.md](training/README.md).
-- Use native-speaker-reviewed Waray answers for supervised training. Preserve train/test separation, source attribution, and permissions. Sailor2's long generated Waray passages are not ready-made chat pairs.
+- The owner permits an explicitly labeled AI-reviewed prototype because no Waray speaker is available. Record the exact reviewing model and method in `reviewed_by`; never call AI review native-speaker review. Native-speaker evaluation is still needed before claiming Waray quality for a delivered app. Preserve train/test separation, source attribution, and permissions. Sailor2's long generated Waray passages are not ready-made chat pairs.
 - Speech recognition requires audio plus transcripts and its own evaluation. Chat fine-tuning does not improve transcription.
 - Keep large model files, raw audio, private data, secrets, and machine-specific paths out of Git. Keep small manifests, scripts, documentation, and shareable reviewed data in Git only when rights permit.
 

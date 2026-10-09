@@ -8,6 +8,7 @@
 | Text chat before speech input | Lets each model's errors be measured separately | Chosen |
 | Sailor2-1B-Chat as baseline | Small model with published Waray coverage and GGUF quantizations | Candidate; quality untested |
 | LoRA on reviewed Waray chat pairs | Adapts chat behavior without training a new foundation model | Planned; no approved training set yet |
+| AI review for an experimental prototype | No fluent Waray reviewer is currently available; the owner asked for an AI-led path on 2026-10-09 | Allowed if reviewer model/method are recorded and results are not presented as native-speaker-validated |
 | Separate speech-to-text model | Text chat training cannot learn audio transcription | Planned |
 | Keep model weights and raw/private data out of Git | Repository stays reviewable and respects sharing limits | Active |
 | Android and model training are the current build direction | Project owner confirmed this on 2026-10-09 after reviewing the laptop-first PRD | Chosen; product use case still open |

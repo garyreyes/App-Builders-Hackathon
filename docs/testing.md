@@ -2,16 +2,16 @@
 
 ## Text model quality
 
-Keep test prompts separate from every training file. Start with the [Waray chat template](../evaluation/waray_chat_template.csv). A fluent Waray speaker should write the prompt and describe the expected behavior. Cover normal conversation, mixed languages, local terms, unclear questions, and different Waray varieties if relevant.
+Keep test prompts separate from every training file. Start with the [Waray chat template](../evaluation/waray_chat_template.csv). A fluent Waray speaker is preferred for the eventual quality claim. For the owner-approved experimental prototype, AI-written prompts are allowed if the generating model and method are recorded and the prompts are independent of training data. Cover normal conversation, mixed languages, local terms, unclear questions, and different Waray varieties if relevant.
 
-For each model version, save the exact prompt, actual reply, and human ratings for:
+For each model version, save the exact prompt, actual reply, reviewer identity or AI model/method, and ratings for:
 
 - Meaning and factual correctness.
 - Naturalness of Waray.
 - Whether it stayed in the requested language.
 - Whether it admitted uncertainty when appropriate.
 
-Compare the baseline and adapted model on the **same held-out prompts**. A lower training loss alone does not prove the app improved.
+Compare the baseline and adapted model on the **same held-out prompts**. A lower training loss alone does not prove the app improved. AI ratings can guide a prototype comparison but do not establish native-speaker quality.
 
 ## Android acceptance check
 
