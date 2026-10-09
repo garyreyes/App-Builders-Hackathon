@@ -32,4 +32,8 @@ For each model version, record:
 | Waray test set version and results | TBD |
 | Offline response time | TBD |
 
+## Health guardrails (app side)
+
+The app, not the model, owns safety: the keyword glossary decides topics and danger signs, danger warnings are pre-translated content, and every generated reply passes a deterministic guardrail (no doses, medicine names, or diagnoses) before display. The model is only asked to reply when a topic card matched, and the prompt includes that card. A delivered model that triggers the guardrail often on the held-out set is not an improvement.
+
 Do not assume Ollama runs inside the Android app. It can be used to test models on a computer; the phone app needs its own local inference runtime.

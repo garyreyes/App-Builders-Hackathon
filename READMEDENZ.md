@@ -1,8 +1,8 @@
-# Offline Waray assistant
+# Offline Waray health helper
 
-A two-person project for Waray text chat and speech input on an Android phone. The first milestone is text chat that works with airplane mode on. Speech input comes after that works on the target phone.
+A two-person project: an offline Android health helper (7 first-aid topics; Waray, Bisaya, Tagalog/Taglish, English) with text chat first and speech input later. The first milestone is text chat that works with airplane mode on. Speech input comes after that works on the target phone.
 
-This project uses the existing public repository [garyreyes/App-Builders-Hackathon](https://github.com/garyreyes/App-Builders-Hackathon). The current owner direction is **Android and Waray model training**. See [scope and branch status](docs/SCOPE.md) before implementing; the separate `docs/planning` branch contains a laptop-only PRD that conflicts with this direction.
+This project uses the existing public repository [garyreyes/App-Builders-Hackathon](https://github.com/garyreyes/App-Builders-Hackathon). The current owner direction is the **combined plan**: health-helper scope ([PRD](docs/PRD.md)) + Sailor2-1B GGUF on llama.cpp + LoRA on reviewed Waray health chat pairs. See [scope](docs/SCOPE.md).
 
 **Android target:** Android 9 / API 28 minimum, 64-bit ARM (`arm64-v8a`), with 6 GB RAM as the first test device. This is a chosen compatibility target, not a claim that every Android 9 phone will have enough memory or acceptable speed.
 
@@ -10,10 +10,10 @@ This project uses the existing public repository [garyreyes/App-Builders-Hackath
 
 - [Agent instructions](AGENTS.md) — project context for either collaborator's coding agent.
 - [Scope and branch status](docs/SCOPE.md) — which plan is current and which planning document conflicts.
-- [Architecture](docs/architecture.md) and [app/model handoff](docs/handoff.md) — what the Android app and local models must exchange.
+- [Architecture](docs/ARCHITECTURE.md) and [app/model handoff](docs/handoff.md) — what the Android app and local models must exchange.
 - [Collaboration](docs/collaboration.md) — GitHub branches, reviews, file sharing, and a prompt for the Android collaborator's agent.
 - [Training workflow](training/README.md), [Sailor2 sources](docs/sailor2.md), and [testing](docs/testing.md) — how to build and judge the Waray model.
-- [Other laptop setup](docs/workstations.md) and [decisions](docs/decisions.md) — where heavier model work runs and why current choices were made.
+- [Other laptop setup](docs/workstations.md) and [decisions](docs/DECISIONS.md) — where heavier model work runs and why current choices were made.
 
 ## Who does what
 
@@ -45,6 +45,6 @@ See [the handoff contract](docs/handoff.md) for what both sides must agree on.
 - Target phone class: API 28+, 64-bit ARM, 6 GB RAM for the first test.
 - Sailor2 Waray dataset and 1B chat model located; see [source notes](docs/sailor2.md).
 - This computer has a GTX 1050 Ti with 4 GB video memory. A larger CUDA GPU is the practical training target. No model has been trained or tested yet.
-- Product use case remains open: [the scope note](docs/SCOPE.md) records the difference between this Android plan and the BHW prenatal-visit PRD.
+- Product use case decided: offline health helper ([PRD](docs/PRD.md)). Sailor2-1B baseline tested on the laptop; results in [PROJECT_FACTS](docs/PROJECT_FACTS.md).
 
 Dataset handoff: add the file to a private location and tell the model collaborator its path, or attach it in the project chat. CSV, JSON, XLSX, TXT, and audio with transcripts can all be inspected. Include where it came from and what permission you have to use it. We will normalize its format after seeing the real data.

@@ -1,8 +1,10 @@
-# Current scope and planning conflict
+# Current scope
 
-**Current direction, confirmed by the project owner on 2026-10-09:** build an offline **Android** app and prepare/train a Waray-capable model. Android 9 / API 28, `arm64-v8a`, and a 6 GB RAM phone are the first compatibility targets. The stronger second laptop will handle model testing and training.
-
-The existing [`docs/planning` branch PRD](https://github.com/garyreyes/App-Builders-Hackathon/blob/docs/planning/docs/PRD.md) describes a different immediate plan: an offline **laptop** demo for Barangay Health Workers, with Android and fine-tuning deferred. That branch belongs to the other collaborator and must not be overwritten. The teammates should decide whether its prenatal health-visit use case is the Android app's use case; until then, the documents in this branch define the shared Android/model infrastructure without asserting a medical workflow.
+**Resolved 2026-10-09 ~22:50 by the project owner: combined plan.** Build an **offline Android health helper**
+(7 first-aid topics; Bisaya, Waray, Tagalog/Taglish, English; product scope in [`docs/PRD.md`](PRD.md)) on the
+model track below: **Sailor2-1B-Chat GGUF on llama.cpp**, with **LoRA fine-tuning on reviewed Waray health chat pairs**.
+Stack and safety design: [`docs/ARCHITECTURE.md`](ARCHITECTURE.md). Android 9 / API 28, `arm64-v8a`, and a 6 GB RAM
+phone remain the first compatibility targets. The `docs/planning` branch (original BHW concept) is preserved, not current.
 
 ## What is decided
 
@@ -13,8 +15,7 @@ The existing [`docs/planning` branch PRD](https://github.com/garyreyes/App-Build
 
 ## What the teammates must align
 
-- Whether the Android app is a general Waray assistant, a BHW prenatal-visit tool, or both in stages.
-- The exact screen/form fields and output format if it is a health-visit tool.
+- ~~Product use case~~ **Decided:** offline health helper (see PRD).
 - Which teammate supplies Waray review and consented speech recordings.
 - How the Android runtime will support API 28, since the current sample app requires API 33.
 

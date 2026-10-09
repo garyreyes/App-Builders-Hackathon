@@ -2,7 +2,7 @@
 
 ## The decision
 
-Start from [Sailor2-1B-Chat](https://huggingface.co/sail/Sailor2-1B-Chat), which already has Waray exposure. Do **supervised fine-tuning with LoRA** on short, native-speaker-reviewed Waray conversations. Training teaches the model how to answer in this app. It does not need to relearn all of Waray from scratch.
+Start from [Sailor2-1B-Chat](https://huggingface.co/sail/Sailor2-1B-Chat), which already has Waray exposure. Do **supervised fine-tuning with LoRA** on short, native-speaker-reviewed Waray **health** conversations covering the app's 7 first-aid topics (see `docs/PRD.md`). Training teaches the model how to answer in this app: reply in the user's language, stay inside the matched topic card, **never give doses or medicine names**, and send off-topic questions to the health center. The Oct 9 baseline failed all four (see `docs/PROJECT_FACTS.md`), so the test set must check each one. It does not need to relearn all of Waray from scratch.
 
 The Sailor2 `sea-synthetic/waray` files contain long generated passages, not chat pairs. Do not dump the whole corpus into this fine-tuning run. A speaker may adapt a useful passage into a question and a checked answer, with its source recorded.
 
@@ -20,7 +20,7 @@ Make the test rows first and keep them out of training. Include natural greeting
 4. **Compare:** run the same untouched test questions against the baseline and adapted models. Keep the adapted model only if speaker ratings improve without harming basic chat behavior.
 5. **Deliver:** merge the LoRA adapter into the base model, export GGUF, quantize to Q4_K_M, record a SHA-256 hash and license, then measure memory, speed, and offline operation on the 6 GB phone.
 
-The local PC detected for this project has a GTX 1050 Ti with 4 GB video memory. That is a tight and unverified setup for modern LoRA tooling. Plan to use a larger CUDA GPU for the first fine-tuning run; the evaluation and data preparation can happen locally.
+The language collaborator's PC has a GTX 1050 Ti with 4 GB video memory, which is too tight. **Training runs on the RTX 4050 (6 GB) laptop**, where PyTorch CUDA is already verified (`torch 2.11.0+cu128`). PEFT/TRL still need installing there. LoRA on a 1B model fits in 6 GB.
 
 ## Separate speech track
 
