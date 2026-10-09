@@ -17,7 +17,22 @@ android {
         versionName = "0.1.0"
 
         ndk {
-            abiFilters += "arm64-v8a"
+            // Phones are arm64; x86_64 lets the same APK run the on-phone AI path on the emulator.
+            abiFilters += listOf("arm64-v8a", "x86_64")
+        }
+
+        // Release stays on the fakes and has no INTERNET permission (PRD). See ollama/README.md.
+        buildConfigField("boolean", "USE_OLLAMA", "false")
+        buildConfigField("String", "OLLAMA_URL", "\"\"")
+        buildConfigField("String", "OLLAMA_MODEL", "\"\"")
+    }
+
+    buildTypes {
+        debug {
+            // Demo bridge: the laptop's Ollama, reached over USB with `adb reverse tcp:11434 tcp:11434`.
+            buildConfigField("boolean", "USE_OLLAMA", "true")
+            buildConfigField("String", "OLLAMA_URL", "\"http://127.0.0.1:11434\"")
+            buildConfigField("String", "OLLAMA_MODEL", "\"health-chat\"")
         }
     }
 
@@ -43,4 +58,13 @@ dependencies {
     // Same lifecycle version Compose already resolves (2.8.7), so this adds no version bump.
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.core:core-ktx:1.10.1")
+
+    // On-phone AI runtime (Google LiteRT-LM), same pin as spikes/android-llm: 0.18.0 was days old on Oct 9.
+    implementation("com.google.ai.edge.litertlm:litertlm-android:0.17.1")
+
+    testImplementation("junit:junit:4.13.2")
+    // Android's org.json is a stub in JVM unit tests; this is the real one.
+    testImplementation("org.json:json:20240303")
+    // Same coroutines version the app already resolves (1.9.0).
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
 }

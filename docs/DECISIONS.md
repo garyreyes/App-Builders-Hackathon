@@ -13,7 +13,8 @@ measurements or Waray speaker evaluation contradict it, and record the changed e
 | Text chat before speech input | Lets each model's errors be measured separately | Chosen |
 | **Product: offline health helper, 7 first-aid topics, 4 languages** | Owner's combined plan, 2026-10-09 ~22:50 | **Chosen** |
 | **Sailor2-1B-Chat GGUF on llama.cpp** | Owner's combined plan. Published Waray coverage, 0.74 GB Q4_K_M | **Chosen**; laptop baseline tested (see below), phone untested |
-| LoRA on reviewed Waray chat pairs | Adapts chat behavior without training a new foundation model | **Chosen**; ship only if it beats the baseline |
+| LoRA on reviewed Waray chat pairs | Adapts chat behavior without training a new foundation model | **Done (Run 03, @yezdenz, Oct 9–10):** 10/25 held-out prompts pass all four checks vs 4/25 baseline, naturalness 18/25 vs 9/25 (AI-reviewed). GGUF exported; not yet compared on the app's 10 questions (docs/PROGRESS_TRACKING.md) |
+| AI review for an experimental prototype | No fluent Waray reviewer available; owner asked for an AI-led path on Oct 9 | Active; reviewer model and method recorded per row. Native-speaker validation still needed before any quality claim |
 | Keyword glossary routes topics + danger signs | Sailor2-1B baseline failed JSON classification on Oct 9 | Chosen |
 | Deterministic guardrail on every model reply | Sailor2-1B baseline invented doses and suggested antibiotics on Oct 9 | Chosen |
 | App downloads the model once (SHA-256 verified) | Owner choice ("like `ollama pull`") | Chosen |
@@ -27,6 +28,11 @@ measurements or Waray speaker evaluation contradict it, and record the changed e
 | **Room for lists, DataStore for single values, one repository** | History and people grow; name/health center don't | Chosen; Room + KSP on AGP 9 unverified |
 | **Health center from the user, 911 from content, never the model** | A 1B model would invent phone numbers | Chosen |
 | **Store birth month, compute the group** | A stored "baby" goes stale and would apply the wrong danger rules | Chosen |
+| **Demo AI via Ollama on the laptop, over USB (debug builds only)** | Trained GGUF not delivered yet and on-phone llama.cpp too risky before the Oct 10 freeze. Owner, Oct 10 ~01:45 | **Chosen for the demo**; release builds unchanged |
+| **Guardrail strict: no medicine names, forms, or doses** | PRD metric (0 reach the screen). Owner, Oct 10 ~01:45, after the trained model was taught OTC names | Chosen; revisit after the trained-model swap |
+| **Demo library: 3 topics with written cards; keyword triage routes only to them** | No placeholder may reach the demo screen (owner, Oct 10). Anything else gets the designed "not covered" answer | Chosen for the demo; the other 4 topics need content |
+| **AI-first chat: the model answers every message, with conversation memory** | Owner, Oct 10 ~02:30: "bullet points" don't show a local LLM. Cards stay as checked steps under the reply | Chosen for the demo |
+| **Demo model: Gemma 4 E2B, grounded on the checked card** | Oct 10 10-question comparison: only setup with short, safe, card-following answers | Chosen for the demo; trained Sailor2 re-tested when delivered |
 
 ## Details
 
@@ -89,3 +95,42 @@ measurements or Waray speaker evaluation contradict it, and record the changed e
 - **Decision 6, birth month, not group:** the group is computed each time (`PersonGroup.of`), so danger rules stay
   age-correct as children grow.
 - **Lesson reused:** the dropped BHW plan (`docs/planning`) stored full patient records. Here every stored field is optional and minimal.
+
+## Demo AI bridge and strict guardrail (Oct 10, 2026, ~01:45)
+
+- **Context:** the trained model (`waray-chat-v2-q8_0.gguf`, PR #7) was not delivered, and the app ran on fakes
+  only. The feature freeze is 07:00.
+- **Decision 1, Ollama on the laptop for the demo:** debug builds call `health-chat` in the laptop's Ollama through
+  `adb reverse` (`ollama/README.md`). No internet is involved, but the model runs beside the phone, not on it; the
+  pitch must say so. Release builds keep the fakes and no INTERNET permission. **Alternative rejected tonight:**
+  llama.cpp on the phone (about 4–5 h of native work). It stays the target. The swap point is `LlmClient`.
+- **Decision 2, the trained model is a laptop-side swap:** the app always asks for `health-chat`; replacing the
+  Modelfile's `FROM` line plugs in any GGUF. The Modelfile pins Sailor2's default system prompt and greedy decoding
+  because that is how the LoRA was trained and scored (verified: Ollama's chat prompt matches HF's template token for
+  token on warm runs). The handoff's own SYSTEM prompt and `temperature 0.7` were not used: untested settings.
+- **Decision 3, strict guardrail:** any medicine name, medicine form ("tablet", "syrup"), dose word or number+unit,
+  named diagnosis, phone number, or (with a danger shown) downplaying phrase hides the whole reply. Streaming shows
+  whole words only and holds back a trailing number until the next word is known, so nothing unsafe flashes on
+  screen. Terms are a Kotlin object (`GuardrailTerms`) until `guardrail_terms.json` exists. **Evidence:** on the
+  emulator, the stock model answered "what medicine and how many mg" with invented "10-20 mg/kg" child doses; the
+  reply was withheld. **Open:** Run 03 was trained to name OTC medicines, so many of its replies will be withheld.
+  Allowing OTC names without doses is an owner decision to make after measuring that.
+- **Known limit:** the guardrail can't catch wrong advice that uses only ordinary words. The stock model told a
+  Waray user to put a burned hand in hot water. The card above every reply is the safety net.
+- **Decision 4, demo library and triage (Oct 10, ~02:10):** only child diarrhea, fever, and burn have written
+  cards (`content/DemoCards.kt`), so triage (`domain/Triage.kt`, glossary in Kotlin until `glossary.json`) routes
+  only to them, and Topics lists only them. Every other message gets the "not covered" answer, which already lists
+  what the app can help with. Danger signs are detected in all four languages whatever the app language.
+  "Dugo"/"blood" counts as blood in the stool only around diarrhea words. **Unreviewed:** the Waray card text and
+  the new Bisaya burn/fever text are AI-drafted; each card's source line says so. Tagalog shows English cards.
+- **Decision 5, AI-first chat (Oct 10, ~02:30):** the owner judged that cards + a footnote reply don't read as a
+  local-LLM app. Now every message gets a model reply (even with no matching card), follow-ups see the last 3
+  answered exchanges, and the reply is the main bubble with the card folded into a "Checked first-aid steps" row.
+  The danger banner still comes first, and when the reply is withheld the full card shows instead.
+- **Decision 6, Gemma 4 E2B grounded on the card (Oct 10, ~03:00):** with the AI in front, stock Sailor2's errors
+  showed (ice on burns, "no water", UK/US emergency numbers, made-up remedies). A comparison of 4 setups on the same
+  10 questions picked `gemma4:e2b` + `HealthPrompt` (rules + checked English card + the user's chosen language).
+  **Cost:** the pitch is no longer "our fine-tuned Waray model"; Gemma's Waray mixes in Bisaya/Tagalog and once said
+  "5 minutes" instead of 20 for cooling a burn (the card below has the right step). The guardrail also now blocks
+  known first-aid myths and non-911 emergency numbers. The trained Sailor2 can be swapped in (`Modelfile.sailor2`)
+  and must beat Gemma on the same 10 questions to replace it.

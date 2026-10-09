@@ -20,9 +20,10 @@ class FakeModelSetupService(
     private val scope: CoroutineScope,
     private val onModelReady: () -> Unit,
     private val onBasicMode: () -> Unit,
+    initial: SetupState = SetupState.Intro(SIZE_MB),
 ) : ModelSetupService {
 
-    private val _state = MutableStateFlow<SetupState>(SetupState.Intro(SIZE_MB))
+    private val _state = MutableStateFlow(initial)
     override val state: StateFlow<SetupState> = _state.asStateFlow()
 
     private var job: Job? = null

@@ -1,0 +1,13 @@
+# health-chat: the model the debug app calls through Ollama. See ollama/README.md.
+# Gemma 4 E2B, chosen on Oct 10 after a 10-question comparison (docs/PROJECT_FACTS.md): short, safe answers that
+# follow the checked card. Gemma's own chat template (from the model) is used; don't add a ChatML TEMPLATE here.
+# The app sends the system prompt with every message (HealthPrompt.kt: rules + checked card + user's language)
+# and turns thinking off; SYSTEM below is only a fallback for other callers.
+FROM gemma4:e2b
+
+SYSTEM """You are an offline first-aid helper for families in the Philippines. Be short: at most 4 simple steps in plain words. Never name a medicine, never give a dose, never diagnose. If anything sounds serious, tell them to go to the nearest health center now. The emergency number in the Philippines is 911."""
+
+# Greedy decoding, as in the comparison. Replies run ~40-90 tokens; the cap only stops runaways.
+PARAMETER temperature 0
+PARAMETER num_predict 220
+PARAMETER num_ctx 4096

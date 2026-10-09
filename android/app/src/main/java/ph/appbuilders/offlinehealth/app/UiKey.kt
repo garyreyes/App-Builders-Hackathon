@@ -66,6 +66,7 @@ object UiKey {
     const val CHAT_TOPICS = "chat.topics"
     const val CHAT_ALSO_ABOUT = "chat.alsoAbout"
     const val CHAT_REPLY_BELOW = "chat.replyBelow"
+    const val CHAT_CHECKED_STEPS = "chat.checkedSteps" // label on the compact card under an AI answer
     const val NOT_COVERED_TITLE = "notCovered.title"
     const val NOT_COVERED_BODY = "notCovered.body"
     const val NOT_COVERED_TOPICS = "notCovered.topics"
