@@ -27,6 +27,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true // VERSION_NAME for the Settings footer
     }
 }
 

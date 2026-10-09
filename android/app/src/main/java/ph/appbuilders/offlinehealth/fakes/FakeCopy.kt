@@ -10,15 +10,66 @@ import ph.appbuilders.offlinehealth.domain.model.TopicId
 
 /** Each language describing itself (endonyms). Real for all 4 languages, since the picker needs them. */
 internal val LanguageSelf: Map<Language, Map<String, String>> = mapOf(
-    Language.CEB to selfOf("Binisaya", "Cebuano", "BIS", "Pinulongan"),
-    Language.WAR to selfOf("Winaray", "Waray", "WAR", "Yinaknan"),
-    Language.TGL to selfOf("Tagalog / Taglish", "Filipino", "TL", "Wika"),
-    Language.ENG to selfOf("English", "", "EN", "Language"),
+    Language.CEB to selfOf("Binisaya", "Cebuano", "BIS", "Pinulongan", "Pili-a ang imong pinulongan"),
+    Language.WAR to selfOf("Winaray", "Waray", "WAR", "Yinaknan", "Pilia an imo yinaknan"),
+    Language.TGL to selfOf("Tagalog / Taglish", "Filipino", "TL", "Wika", "Piliin ang iyong wika"),
+    Language.ENG to selfOf("English", "", "EN", "Language", "Choose your language"),
 )
 
-private fun selfOf(name: String, alias: String, code: String, word: String) = mapOf(
+private fun selfOf(name: String, alias: String, code: String, word: String, choose: String) = mapOf(
     UiKey.LANGUAGE_NAME to name, UiKey.LANGUAGE_ALIAS to alias,
-    UiKey.LANGUAGE_CODE to code, UiKey.LANGUAGE_WORD to word,
+    UiKey.LANGUAGE_CODE to code, UiKey.LANGUAGE_WORD to word, UiKey.LANGUAGE_CHOOSE to choose,
+)
+
+/** Language picker, setup, topics, and settings. The canvas wrote these in English only. */
+private val EnglishScreensUi: Map<String, String> = mapOf(
+    UiKey.LANGUAGE_CHANGE_LATER to "You can change this anytime.",
+    UiKey.NAV_BACK to "Back",
+    UiKey.NAV_BACK_TO_TOPICS to "Back to topics",
+    UiKey.NAV_TOPICS to "Topics",
+    UiKey.SETUP_INTRO_TITLE to "Get the AI helper",
+    UiKey.SETUP_INTRO_BODY to "Download once on Wi-Fi. After that, it works with no signal.",
+    UiKey.SETUP_INTRO_SIZE to "{size}, one time only",
+    UiKey.SETUP_INTRO_OFFLINE to "Works offline after setup",
+    UiKey.SETUP_INTRO_PRIVATE to "Everything stays on your phone",
+    UiKey.SETUP_DOWNLOAD to "Download AI · {size}",
+    UiKey.SETUP_BASIC to "Use basic mode for now",
+    UiKey.SETUP_BASIC_NOTE to "Danger checks and first-aid cards work right away.",
+    UiKey.SETUP_MB to "{mb} MB",
+    UiKey.SETUP_DOWNLOADING_TITLE to "Downloading the AI helper",
+    UiKey.SETUP_DOWNLOADING_BODY to "You can leave the app. The download keeps going.",
+    UiKey.SETUP_PROGRESS to "{done} of {total} MB",
+    UiKey.SETUP_PROGRESS_DESC to "Download progress",
+    UiKey.SETUP_KEEP_WIFI to "Keep Wi-Fi on until it finishes.",
+    UiKey.SETUP_CANCEL to "Cancel download",
+    UiKey.SETUP_VERIFYING_TITLE to "Checking the file…",
+    UiKey.SETUP_VERIFYING_BODY to "This takes a few seconds.",
+    UiKey.SETUP_DONE_TITLE to "Ready.",
+    UiKey.SETUP_DONE_BODY to "Works without internet now.",
+    UiKey.SETUP_START to "Start",
+    UiKey.SETUP_NO_INTERNET_TITLE to "No internet right now",
+    UiKey.SETUP_NO_INTERNET_BODY to
+        "Connect to Wi-Fi or mobile data once to download the AI. Basic mode works without it.",
+    UiKey.SETUP_TRY_AGAIN to "Try again",
+    UiKey.SETUP_STORAGE_TITLE to "Not enough space",
+    UiKey.SETUP_STORAGE_BODY to "Remove some videos, photos, or apps, then try again.",
+    UiKey.SETUP_STORAGE_NEEDED to "Needed",
+    UiKey.SETUP_STORAGE_FREE to "Free on this phone",
+    UiKey.SETUP_STORAGE_MORE to "Free up {mb} MB more.",
+    UiKey.SETUP_FAILED_TITLE to "Download stopped",
+    UiKey.SETUP_FAILED_BODY to "The connection dropped at {done} of {total} MB. Try again when the signal is better.",
+    UiKey.SETUP_RETRY to "Retry",
+    UiKey.SETUP_CHECK_FAILED_TITLE to "The file didn’t pass the check",
+    UiKey.SETUP_CHECK_FAILED_BODY to "It may be damaged. Download it again to fix it.",
+    UiKey.SETUP_DOWNLOAD_AGAIN to "Download again",
+    UiKey.TOPICS_SUBTITLE to "Open a topic to see what to do. No typing needed.",
+    UiKey.SETTINGS_AI to "AI helper",
+    UiKey.SETTINGS_AI_READY to "Ready · works offline",
+    UiKey.SETTINGS_ABOUT to "About & disclaimer",
+    UiKey.SETTINGS_ABOUT_DESC to "Not a doctor. What this app can do.",
+    UiKey.SETTINGS_SOURCES to "Sources",
+    UiKey.SETTINGS_SOURCES_DESC to "DOH and WHO guidance",
+    UiKey.SETTINGS_VERSION to "Offline Health Helper · Version {version}",
 )
 
 internal val EnglishUi: Map<String, String> = mapOf(
@@ -59,7 +110,7 @@ internal val EnglishUi: Map<String, String> = mapOf(
     UiKey.NOT_COVERED_TITLE to "I can’t help with this one.",
     UiKey.NOT_COVERED_BODY to "Please go to the nearest health center.",
     UiKey.NOT_COVERED_TOPICS to "Topics I can help with",
-)
+) + EnglishScreensUi
 
 internal val BisayaUi: Map<String, String> = mapOf(
     UiKey.COMPOSER_DISCLAIMER to "Dili kini doktor. Kung emerhensya, adto sa health center.",

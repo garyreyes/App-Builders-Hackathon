@@ -1,4 +1,4 @@
-package ph.appbuilders.offlinehealth.features.chat.components
+package ph.appbuilders.offlinehealth.app.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -30,7 +30,6 @@ import ph.appbuilders.offlinehealth.R
 import ph.appbuilders.offlinehealth.app.LocalUiText
 import ph.appbuilders.offlinehealth.app.UiKey
 import ph.appbuilders.offlinehealth.app.UiText
-import ph.appbuilders.offlinehealth.app.components.SurfaceButton
 import ph.appbuilders.offlinehealth.app.theme.Palette
 import ph.appbuilders.offlinehealth.domain.model.Language
 import ph.appbuilders.offlinehealth.fakes.PreviewFrame
@@ -40,7 +39,7 @@ private val OptionShape = RoundedCornerShape(14.dp)
 /** Order of the other languages' word for "language" in the sheet's subtitle (LangSheet.dc.html). */
 private val SubtitleOrder = listOf(Language.ENG, Language.CEB, Language.WAR, Language.TGL)
 
-/** Language switch over the chat (C13). Each option shows the language's own name. Tap = switch and close. */
+/** Language switch (C13), over the chat or Settings. Each option shows the language's own name. Tap = switch and close. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LanguageSheet(onPick: (Language) -> Unit, onDismiss: () -> Unit) {

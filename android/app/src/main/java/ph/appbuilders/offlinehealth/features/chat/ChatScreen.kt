@@ -36,7 +36,7 @@ import ph.appbuilders.offlinehealth.domain.model.Language
 import ph.appbuilders.offlinehealth.domain.model.TopicId
 import ph.appbuilders.offlinehealth.domain.model.TopicSummary
 import ph.appbuilders.offlinehealth.features.chat.components.Composer
-import ph.appbuilders.offlinehealth.features.chat.components.LanguageSheet
+import ph.appbuilders.offlinehealth.app.components.LanguageSheet
 import ph.appbuilders.offlinehealth.features.chat.components.MenuAction
 import ph.appbuilders.offlinehealth.features.chat.components.ReplyBelowChip
 import ph.appbuilders.offlinehealth.features.chat.components.TopBar

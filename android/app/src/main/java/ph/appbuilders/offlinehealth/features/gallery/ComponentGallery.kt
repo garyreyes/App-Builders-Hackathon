@@ -35,8 +35,8 @@ import ph.appbuilders.offlinehealth.features.chat.components.AiReply
 import ph.appbuilders.offlinehealth.features.chat.components.Composer
 import ph.appbuilders.offlinehealth.features.chat.components.DangerBanner
 import ph.appbuilders.offlinehealth.features.chat.components.FirstAidCard
-import ph.appbuilders.offlinehealth.features.chat.components.LanguageSheet
-import ph.appbuilders.offlinehealth.features.chat.components.LanguageSheetContent
+import ph.appbuilders.offlinehealth.app.components.LanguageSheet
+import ph.appbuilders.offlinehealth.app.components.LanguageSheetContent
 import ph.appbuilders.offlinehealth.features.chat.components.TopBar
 import ph.appbuilders.offlinehealth.features.chat.components.TopicGrid
 import ph.appbuilders.offlinehealth.features.chat.components.UserMessage
