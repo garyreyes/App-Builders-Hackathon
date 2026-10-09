@@ -1,0 +1,116 @@
+# Project Facts
+
+Durable, verified facts. Each one was tested live, not taken from docs.
+
+## On-device LLM spike: Oct 9, 2026, ~21:30–22:00
+
+### Runtime
+- **LiteRT-LM** (`com.google.ai.edge.litertlm:litertlm-android`) is Google's current on-device LLM runtime.
+  The MediaPipe LLM Inference API is deprecated/maintenance-only on Android.
+- Pinned **0.17.1**. 0.18.0 was published Oct 6, 2026, too new to trust tonight.
+- **0.17.1 is compiled with Kotlin 2.4.** With AGP 9.3.1 (built-in Kotlin 2.2) the build fails with
+  "binary version of its metadata is 2.4.0, expected 2.2.0". Fix: add `kotlin-gradle-plugin:2.4.0` to the root
+  `buildscript` classpath and set the compose plugin to 2.4.0. See `spikes/android-llm/build.gradle.kts`.
+- Spike APK builds (`spikes/android-llm`, ~60 MB debug). It has **no INTERNET permission**.
+- Models are side-loaded to `/sdcard/Android/data/ph.hackathon.spike/files/`.
+
+### Model files (Hugging Face, checked via API)
+| Model | File | Size | Gated |
+|---|---|---|---|
+| Gemma 4 E2B | `litert-community/gemma-4-E2B-it-litert-lm/gemma-4-E2B-it.litertlm` | 2588 MB (GPU variant 2008 MB) | **No** |
+| Gemma 3 1B | `litert-community/Gemma3-1B-IT/gemma3-1b-it-int4.litertlm` | 584 MB | Yes (auto-approve, needs HF login) |
+| Qwen3 0.6B | `litert-community/Qwen3-0.6B/Qwen3-0.6B.litertlm` | 614 MB | No |
+| Gemma 3n E2B | `google/gemma-3n-E2B-it-litert-lm` | 3656 MB | Yes (manual) |
+
+### Language quality (laptop, same model families via Ollama, temperature 0–0.3)
+Test: grounded answer from an English "child diarrhea" guide card, plus JSON classification
+(topic + danger signs) of 6 messages in Bisaya/Waray/Taglish/English.
+
+| Model | Grounded answer | Classification |
+|---|---|---|
+| qwen3:0.6b | ❌ Echoes the question back | not tested |
+| gemma3:1b | ⚠️ Understood "diarrhea", but replied in **Tagalog** to Bisaya/Waray. Answered a toothache question with diarrhea advice | ❌ Wrong topics, invented danger signs |
+| qwen3:1.7b | not tested | ⚠️ Topic 3/6, danger signs mostly invented |
+| **gemma4:e2b** | ✅ Correct and grounded, but replies in **English**. Off-topic → "go to the health center" ✅ | ✅ Topic 5/6. **Danger signs 3/3 found, 0 invented.** Toothache → `none` ✅ |
+
+**Conclusions**
+1. ~1B models are not usable for native-language understanding or for danger detection.
+2. **Gemma 4 E2B** is the minimum viable model. It understands Bisaya/Waray/Taglish input well enough to classify.
+3. No small model writes Bisaya/Waray reliably. **Replies in the user's language must be pre-translated
+   content** (team native speaker). The model understands; it doesn't write the local-language reply.
+4. Its language label is unreliable (says "Tagalog" for Bisaya). Language comes from the user's setting.
+5. Danger signs must also have a **deterministic keyword check** (glossary) alongside the model. The model
+   found 3/3 here, but the target is 10/10.
+
+### Sailor2-1B-Chat baseline (Oct 9, ~22:55, laptop via Ollama, `bartowski/Sailor2-1B-Chat-GGUF` Q4_K_M)
+File: `Sailor2-1B-Chat-Q4_K_M.gguf`, 738,628,576 bytes, sha256 `782e8abed13d51a2083eadfb2f6d94c2cd77940532f612a99e6f6bec9b3501d4`,
+repo commit `9f8154a0ffdf04bb7f29e4f6c3cb938b9178dba3`, Apache-2.0. Same two tests as above, untouched model.
+
+| Test | Result |
+|---|---|
+| JSON classification (6 messages) | ❌ Topic "diarrhea" for 5/6 (incl. breathing, pregnancy bleeding, toothache). Danger lists are dumped glossary words, not ids. Language always "Tagalog" |
+| Grounded answer, Bisaya | ⚠️ **Replies in Bisaya** (more natural than Gemma 4), but **invents ORS doses** ("30 ml/kg bawat 3-4 oras") and steps not in the card |
+| Grounded answer, Waray / Taglish | ⚠️ Replies in **English**. Invents doses ("20-30 ml/kg") |
+| Off-topic (toothache, Bisaya) | ❌ **Recommends ibuprofen, acetaminophen, and antibiotics.** Does not refuse |
+
+**Conclusions → design (see DECISIONS.md):** glossary routing instead of model classification. A deterministic
+guardrail on every reply. The model is only called when a topic card matched. The LoRA training set must teach:
+reply in the user's language, stay inside the card, no doses/medicines, refuse off-topic. These outputs are
+regression fixtures for `GuardrailTest`.
+
+### Runtime decision changed (Oct 9, ~22:50)
+Owner chose **llama.cpp + Sailor2 GGUF** (language collaborator's track) over LiteRT-LM + Gemma 4. The LiteRT-LM
+facts above stay true and are kept as a record. Gemma 4 E2B also exists as GGUF, so it's a fallback on the same runtime.
+
+### Still unverified
+- llama.cpp Android build for **API 28 / arm64-v8a** (official sample is minSdk 33).
+- Sailor2-1B (and the adapted model) speed and memory on the **6 GB demo phone**, in airplane mode.
+- Whether LoRA on reviewed pairs fixes language choice, invented doses, and off-topic refusals.
+
+## Ollama demo bridge: Oct 10, 2026, ~01:30–02:15
+
+- Ollama 0.40.1 on the laptop. `hf.co/bartowski/Sailor2-1B-Chat-GGUF:Q4_K_M` (738 MB) is the stand-in model.
+- **Ollama's built-in template for that GGUF adds no system prompt.** HF's Sailor2 template inserts a default system
+  prompt when none is given, and training (`training/local_cli.py`, PR #7) sent none. `ollama/Modelfile` sets that
+  default text explicitly. Check: `/api/chat` and a hand-built HF-format prompt via `/api/generate` with `raw:true`
+  gave the same prompt token count (125) and identical output on warm runs. The very first (cold) run differed.
+- Stock model, laptop RTX 4050: 160 tokens in ~1.4–7 s depending on whether the model was already loaded.
+- Stock model answers are poor and sometimes dangerous: "organize activities" for child diarrhea; hot water for a
+  burn; invented "10-20 mg/kg" child doses for a medicine question (withheld by the guardrail on the emulator).
+- Emulator (API 37, x86_64) with `adb reverse tcp:11434 tcp:11434`: setup skipped, pill "AI ready", the card shows
+  instantly and the reply streams under it. Removing the reverse → next send withheld, pill "basic mode"; restoring
+  it → next send "AI ready" again.
+- Android requires the INTERNET permission even for `127.0.0.1`, and API 28+ blocks cleartext by default. Both are
+  granted in `src/debug/` only; the release APK has no INTERNET permission (checked with `aapt dump permissions`).
+- Sailor2 writes markdown (`**`, `###`); `ReplyText.plain` strips it because the UI shows plain text.
+
+- With real triage + demo cards (emulator, Waray): a burn message shows the Waray burn card, then the model reply;
+  "hilanat ngan kumbulsyon" shows the red banner with the seizure message and the fever card; "ngipon" (toothache)
+  shows "not covered" with exactly 3 topics. No placeholder text appears.
+- The stock model's burn reply told the user to press the burned hand. It passed the guardrail (no blocked words):
+  wrong advice in plain words is beyond a keyword guardrail; the card above it is the safety net.
+- Danger banner headline and other UI copy are English for Waray (no Waray UI strings yet; only the card is Waray).
+
+## Model comparison for the AI-first chat: Oct 10, 2026, ~02:45-03:05
+
+Same 10 questions (Waray, Bisaya, Tagalog, English: 4 card topics, a danger case, 3 non-card questions, a medicine
+trap, an emergency-number question), temperature 0, laptop Ollama. Script kept outside the repo; results summarized:
+
+| Setup | Result |
+|---|---|
+| S0 stock Sailor2, default prompt | Long markdown; ice/"no water"/soapy water for burns; invented child doses; wrong emergency numbers |
+| S1 Sailor2 + health prompt + card | Follows the burn card but long markdown, cut off at 220 tokens; named Tylenol/paracetamol; invented tea/lemon/garlic for stomach ache |
+| G1 `gemma4:e2b` + prompt + card + language | 4 short plain steps, follows the card, no medicine, 911; ~1 s warm. Waray mixes Bisaya/Tagalog; once "5 minutes" instead of 20 |
+| Q1 `qwen3:4b` + prompt + card | `think:false` did not stop it writing its reasoning into the reply; ~10 s |
+
+- **Gemma 4 needs `"think": false`** in `/api/chat`: without it the reply came back empty (the token budget went to
+  thinking). Sailor2 accepts the same field, so the app always sends it.
+- Without a stated language, Gemma answered English and Waray questions in Tagalog. Naming the user's chosen language
+  in the prompt fixed English; Waray stays mixed.
+- Emulator, after the switch: the burn question gives the 4 card steps in plain English; "What if it is a baby?"
+  follows up correctly ("Do not apply ice", allowed as a warning); a headache question gets rest/water/health center.
+
+### Still unverified
+- The trained `waray-chat-v2-q8_0.gguf` in Ollama (file not delivered), and how many of its replies the strict
+  guardrail withholds.
+- A real phone over USB (only the emulator was tested).

@@ -9,6 +9,8 @@ PROJECT-PROPOSAL.pdf
 *.bin
 *.pt
 *.onnx
+*.litertlm
+*.task
 models/
 
 # Python
@@ -31,6 +33,15 @@ data/raw/
 data/private/
 outputs/
 checkpoints/
+
+# Android
+.gradle/
+build/
+.idea/
+.cxx/
+local.properties
+*.apk
+*.aab
 
 # OS / editor
 .DS_Store

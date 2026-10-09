@@ -2,7 +2,8 @@
 
 ## The decision
 
-Start from [Sailor2-1B-Chat](https://huggingface.co/sail/Sailor2-1B-Chat), which already has Waray exposure. Do **supervised fine-tuning with LoRA** on short, reviewed Waray conversations. The owner permits an AI-reviewed experimental prototype if each row clearly names the reviewing model and method. Native-speaker review is still required before claiming the delivered app's Waray quality. Training teaches the model how to answer in this app. It does not need to relearn all of Waray from scratch.
+Start from [Sailor2-1B-Chat](https://huggingface.co/sail/Sailor2-1B-Chat), which already has Waray exposure. Do **supervised fine-tuning with LoRA** on short, reviewed Waray **health** conversations covering the app's 7 first-aid topics (see `docs/PRD.md`). Training teaches the model how to answer in this app: reply in the user's language, stay inside the matched topic card, **never give doses or medicine names**, and send off-topic questions to the health center. The Oct 9 baseline failed all four (see `docs/PROJECT_FACTS.md`), so the test set must check each one. It does not need to relearn all of Waray from scratch.
+The owner permits an AI-reviewed experimental prototype if each row clearly names the reviewing model and method. Native-speaker review is still required before claiming the delivered app's Waray quality.
 
 The Sailor2 `sea-synthetic/waray` files contain long generated passages, not chat pairs. Do not dump the whole corpus into this fine-tuning run. A speaker may adapt a useful passage into a question and a checked answer, with its source recorded.
 
@@ -20,7 +21,7 @@ Make the test rows first and keep them out of training. Include natural greeting
 4. **Compare:** run the same untouched test questions against the baseline and adapted models. Keep the adapted model only if independent ratings improve without harming basic chat behavior. AI ratings establish a prototype signal, not native-speaker quality.
 5. **Deliver:** merge the LoRA adapter into the base model, export GGUF, quantize to Q4_K_M, record a SHA-256 hash and license, then measure memory, speed, and offline operation on the 6 GB phone.
 
-The earlier PC check found a GTX 1050 Ti with 4 GB VRAM. The current training laptop has an RTX 4050 with 6 GB VRAM; see [workstation notes](../docs/workstations.md). LoRA on Sailor2-1B-Chat is plausible here but has not yet been validated by a training run.
+The earlier PC check found a GTX 1050 Ti with 4 GB VRAM. The current training laptop has an RTX 4050 with 6 GB VRAM; see [workstation notes](../docs/workstations.md). LoRA on Sailor2-1B-Chat runs here: Run 03 trained in 2,272 MiB peak VRAM (see [progress tracking](../docs/PROGRESS_TRACKING.md)). To try a delivered GGUF in the app, use `ollama/Modelfile.sailor2` and compare it against the demo model on the same 10 questions ([ollama/README.md](../ollama/README.md)).
 
 To check GPU inference without changing model weights, create a local `.venv`, install a CUDA-enabled PyTorch build plus `transformers`, `accelerate`, and `huggingface_hub`, then run `python training/gpu_smoke.py` from the repository root. The script downloads the official 1B chat model into the normal Hugging Face cache and writes its revision, GPU memory use, timing, and sample reply to ignored `outputs/gpu-smoke.json`. Its English sample prompt only verifies that the software path works; it is not the required Waray baseline evaluation.
 

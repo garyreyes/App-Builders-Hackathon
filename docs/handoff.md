@@ -55,6 +55,16 @@ The Python reference rule layer is deterministic and needs no network. Its sourc
 | Quantization | `Q8_0` (1,056,199,040 bytes / ~0.98 GiB) and `F16` (1,982,376,320 bytes / ~1.85 GiB) |
 | Waray test set results | 8/25 (32%) all-criteria pass, 10/25 hallucination-free, 11/25 naturalness |
 
+## Health guardrails (app side)
+
+The app, not the model, owns safety: the keyword glossary decides topics and danger signs, danger warnings are pre-translated content, and every generated reply passes a deterministic guardrail (no doses, medicine names, or diagnoses) before display. The model is only asked to reply when a topic card matched, and the prompt includes that card. A delivered model that triggers the guardrail often on the held-out set is not an improvement.
+
+The guardrail's word lists (drug names, dose units, diagnosis phrases, and "downplay" phrases such as "no need to go") live in the Health Library (`assets/content/guardrail_terms.json`), so the language collaborator can extend them in all 4 languages. The guardrail also blocks phone numbers in model replies. Numbers come only from content (911) or the user's saved health center.
+
+## Prompt template (frozen for v1)
+
+The app's prompt is **system prompt + matched card (English + user's language) + user text**. It contains **no patient context and no saved memory** in v1. "Who is this for?" and memory are used only by the app (triage, cards, banner). Train and evaluate the LoRA with this exact template. If v2 adds a person line to the prompt, both sides update this section first, then retrain with the new template. Teammate tasks for this change: [teammate-tasks.md](teammate-tasks.md).
+
 Do not assume Ollama runs inside the Android app. It can be used to test models on a computer; the phone app needs its own local inference runtime.
 
 
