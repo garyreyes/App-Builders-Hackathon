@@ -34,7 +34,9 @@ it (4/25 → 10/25 held-out Waray prompts, AI-reviewed), which is not in the app
 **Technologies & frameworks:** Kotlin, Jetpack Compose, Google LiteRT-LM 0.17.1, Ollama 0.40.1, JUnit.
 Training: PyTorch, Hugging Face Transformers, PEFT, TRL, bitsandbytes, llama.cpp (GGUF export).
 
-**APIs & cloud services:** none. No cloud AI API anywhere in the product.
+**APIs & cloud services:** none in the product; no cloud AI API anywhere in the app. Model training ran locally on
+an RTX 4050 laptop GPU. During development only: the AI coding tools below, Google Gemini (`gemini-3.8-flash`) to
+review the AI-generated Waray training pairs, and Hugging Face Hub to download models and the dataset.
 
 **Existing code & assets:** open-source libraries above; first-aid guidance based on DOH/WHO materials; Hugging Face
 dataset `ruslanmv/ai-medical-chatbot` used only in a separate training experiment (credited in docs/DATASET_CREDITS.md). All app code
@@ -84,4 +86,8 @@ Restart the app after switching.
 - **How do you stop wrong medical advice?** Danger signs never depend on the AI; answers are grounded on checked
   cards; a deterministic guardrail hides medicines, doses, diagnoses, myths, and wrong emergency numbers.
 - **Was it tested on a real phone?** Not yet; verified on the Android emulator running the model on-device.
-- **Is the Waray reviewed?** Not by a native speaker yet; it is marked as unreviewed in the app.
+- **Is the Waray reviewed?** Not by a native speaker yet; it is marked as unreviewed in the app. The training pairs
+  were AI-generated and reviewed by Gemini, labeled as such.
+- **Your fine-tune data mentions OTC medicines; doesn't that contradict the guardrail?** The fine-tune is a separate
+  experiment, not in the app. If it goes in, the same guardrail filters every reply, so medicine names and doses
+  are still hidden.
