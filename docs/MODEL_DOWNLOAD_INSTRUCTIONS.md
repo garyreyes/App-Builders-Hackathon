@@ -29,7 +29,7 @@ Because the model file exceeds GitHub standard commit limits, upload it to one o
 
 1. **GitHub Releases (Recommended for Judges)**
    * Go to your repository Releases page:
-     `https://github.com/garyreyes/Buha.ai/releases`
+     `https://github.com/garyreyes/Buh.ai/releases`
    * Edit or create a release (example: tag `android-judge-demo-v1`).
    * Attach `waray-chat-v3-q8_0.gguf` alongside `app-debug.apk`.
 
