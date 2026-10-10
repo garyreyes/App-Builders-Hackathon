@@ -88,6 +88,9 @@ Restart the app after switching.
   but its Waray mixed in Bisaya and Tagalog. Our teammate fine-tuned Sailor2 on Waray pairs; it is smaller (1B) and
   is now the default, with Gemma as the fallback. The fine-tuned model has not been run through that 10-question
   test; its own scores (Gemini-judged, 25 held-out prompts) are in docs/PROGRESS_TRACKING.md.
+- **Why does the video show Gemma's answer?** For the demo message, the trained Sailor2 (run on the laptop with the
+  app's exact prompt, Oct 10) named antibiotics, so the app's guardrail would hide it and show the checked card.
+  Gemma's answer passes. We show what the app would really display.
 - **How do you stop wrong medical advice?** Danger signs never depend on the AI; answers are grounded on checked
   cards; a deterministic guardrail hides medicines, doses, diagnoses, myths, and wrong emergency numbers.
 - **Was it tested on a real phone?** Not yet; verified on the Android emulator running the model on-device.
