@@ -82,12 +82,14 @@ See [ollama/README.md](ollama/README.md).
   Jetpack Compose. Training: PyTorch, Transformers, PEFT, TRL, bitsandbytes, llama.cpp (GGUF export).
 - **Content:** first-aid cards based on DOH/WHO guidance. Waray, Bisaya, and Tagalog text is AI-drafted and **not
   yet reviewed by a native speaker** (marked on each card).
-- **Training data** ([credits](docs/DATASET_CREDITS.md)): AI-generated and AI-reviewed Waray pairs (honestly labeled), and
+- **Training data** ([credits](docs/DATASET_CREDITS.md)): AI-generated Waray pairs, reviewed by Google Gemini
+  (`gemini-3.8-flash`, recorded in each row's `reviewed_by`; not native-speaker review), and
   [`ruslanmv/ai-medical-chatbot`](https://huggingface.co/datasets/ruslanmv/ai-medical-chatbot) for a separate
   medical experiment that is not in the app.
 - **AI development tools:** Claude Code (Anthropic) for the app; the training track used OpenAI Codex and Google
   Antigravity ([handoff notes](docs/ANTIGRAVITY_HANDOFF.md)).
-- **No cloud AI API is used anywhere** in the app.
+- **No cloud AI API is used anywhere** in the app. Model training ran locally on an RTX 4050 laptop GPU. Cloud AI
+  was used only during development: the coding tools above, and Gemini to review the Waray training data.
 
 ## How we chose the model
 
