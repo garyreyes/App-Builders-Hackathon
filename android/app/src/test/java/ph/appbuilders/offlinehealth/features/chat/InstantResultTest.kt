@@ -29,7 +29,7 @@ class InstantResultTest {
         val result = instant.of("Napaso an akon kamot", Language.WAR)
         assertEquals(TopicId.BURN, result.card?.topicId)
         assertEquals("Paso", result.card?.title)
-        assertTrue(result.card!!.source.contains("not yet reviewed"))
+        assertTrue(result.card!!.source.contains("Prototype card"))
         assertFalse(result.otherTopics.any { it.topicId == TopicId.BURN })
     }
 

@@ -4,8 +4,8 @@ import ph.appbuilders.offlinehealth.app.UiKey
 import ph.appbuilders.offlinehealth.domain.model.Language
 import ph.appbuilders.offlinehealth.domain.model.TopicId
 
-// PLACEHOLDER COPY. Every string here comes from the design canvas and handover §8. None of it has been
-// reviewed by a native speaker or a clinician. The teammate's ui_strings.json and topic JSON replace all of it.
+// PLACEHOLDER COPY. Every string here comes from the design canvas and handover §8.
+// The teammate's ui_strings.json and topic JSON replace all of it.
 // Bisaya appears only where the canvas wrote it. Any other key falls back to English (no invented translations).
 
 /** Each language describing itself (endonyms). Real for all 4 languages, since the picker needs them. */

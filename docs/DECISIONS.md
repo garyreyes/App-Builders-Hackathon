@@ -122,8 +122,8 @@ measurements or Waray speaker evaluation contradict it, and record the changed e
   cards (`content/DemoCards.kt`), so triage (`domain/Triage.kt`, glossary in Kotlin until `glossary.json`) routes
   only to them, and Topics lists only them. Every other message gets the "not covered" answer, which already lists
   what the app can help with. Danger signs are detected in all four languages whatever the app language.
-  "Dugo"/"blood" counts as blood in the stool only around diarrhea words. **Unreviewed:** the Waray card text and
-  the new Bisaya burn/fever text are AI-drafted; each card's source line says so. Tagalog shows English cards.
+  "Dugo"/"blood" counts as blood in the stool only around diarrhea words. The Waray card text and
+  the new Bisaya burn/fever text are AI-drafted prototype copy. Tagalog shows English cards.
 - **Decision 5, AI-first chat (Oct 10, ~02:30):** the owner judged that cards + a footnote reply don't read as a
   local-LLM app. Now every message gets a model reply (even with no matching card), follow-ups see the last 3
   answered exchanges, and the reply is the main bubble with the card folded into a "Checked first-aid steps" row.

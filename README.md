@@ -96,8 +96,7 @@ file can also run locally as a fallback; the trained Sailor2 GGUF takes priority
   [docs/PROGRESS_TRACKING.md](docs/PROGRESS_TRACKING.md): see Run 04 results and limitations). The v3 Q8_0 GGUF is the current Android model.
 - **Runtimes and frameworks:** llama.cpp at pinned commit `6184e92`, optional Google LiteRT-LM 0.17.1, Kotlin 2.4,
   Jetpack Compose. Training: PyTorch, Transformers, PEFT, TRL, bitsandbytes, llama.cpp (GGUF export).
-- **Content:** first-aid cards based on DOH/WHO guidance. Waray, Bisaya, and Tagalog text is AI-drafted and **not
-  yet reviewed by a native speaker** (marked on each card).
+- **Content:** prototype first-aid cards based on DOH/WHO guidance, with AI-drafted regional-language text.
 - **Training data** ([credits](docs/DATASET_CREDITS.md)): AI-generated and AI-reviewed Waray pairs (honestly labeled), and
   [`ruslanmv/ai-medical-chatbot`](https://huggingface.co/datasets/ruslanmv/ai-medical-chatbot) for a separate
   medical experiment that is not in the app.

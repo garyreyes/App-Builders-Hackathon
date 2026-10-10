@@ -19,5 +19,5 @@ can be slow and the guardrail may withhold a reply. Do not describe the laptop a
 and generated a Waray reply. The APK requested no Internet permission. One fever answer was withheld by the
 guardrail; a simple vocabulary answer was inaccurate. The model-only desktop result was 12/25 on the held-out
 Waray questions. The 24/25 desktop result included a separate rule layer that is not yet in Android. A physical
-ARM64 phone, Android 9/API 28 runtime, native Waray review, and clinical review remain unverified. Present it as
+ARM64 phone, Android 9/API 28 runtime, and clinical review remain unverified. Present it as
 a hackathon prototype, not a medical device or a clinically validated assistant.

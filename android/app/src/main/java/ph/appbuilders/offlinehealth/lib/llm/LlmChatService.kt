@@ -20,7 +20,7 @@ import ph.appbuilders.offlinehealth.domain.model.Language
 import ph.appbuilders.offlinehealth.features.chat.ChatService
 
 /**
- * The AI chat: every message gets a model reply (owner, Oct 10: the AI is the product), with the instant danger
+ * The AI chat: messages without danger signs get a model reply, with the instant danger
  * check and topic card from [triage] alongside it. Every piece of reply text passes [Guardrail] before it is
  * emitted; the first failure hides the whole reply. Follow-ups see the last [HISTORY_TURNS] answered exchanges.
  * [prompt] builds each request's system prompt from the instant result (its checked card) and the user's language;
@@ -67,6 +67,11 @@ class LlmChatService(
 
     override fun send(text: String, language: Language): Flow<ChatResult> = flow {
         val base = triage(text, language)
+        // An emergency warning must never be followed by unverified model advice. Keep the checked card visible.
+        if (base.dangers.isNotEmpty()) {
+            emit(base.copy(ai = AiReplyState.Withheld))
+            return@flow
+        }
         if (status.value == AiStatus.BASIC && !basicByChoice) warmUp()
         emit(base.copy(ai = firstAiState()))
         if (status.first { it != AiStatus.STARTING } == AiStatus.BASIC) {
