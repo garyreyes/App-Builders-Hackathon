@@ -8,7 +8,7 @@ before submitting (one submission only, no edits).
 **Project name:** Offline Health Helper
 
 **Short description:**
-An AI first-aid helper that runs entirely on the phone in Waray, Bisaya, Tagalog, and English. A parent whose child
+An AI first-aid helper that runs on-device on Android in Waray, Bisaya, Tagalog, and English. A parent whose child
 is sick during a typhoon, with no signal, types what is happening in their own language. The app instantly flags
 danger signs ("Go to the health center NOW · Call 911") and Gemma 4 E2B, running on the device, answers with short
 steps grounded on checked DOH/WHO first-aid cards. A safety guardrail hides any reply with a medicine, dose,
@@ -21,12 +21,15 @@ airplane-mode test. And a child's illness or a pregnancy is sensitive health dat
 no account, server, or analytics.
 
 **What runs locally:** everything. Keyword triage and danger signs, the first-aid cards, the safety guardrail, and
-the AI model (Gemma 4 E2B via Google LiteRT-LM on the phone; optional laptop mode via Ollama on the same machine).
+the AI model (Gemma 4 E2B via Google LiteRT-LM on the Android device, verified on the Android emulator, not yet on a
+physical phone; optional laptop mode runs the same model in Ollama on a local laptop, used for the live demo because
+it is faster).
 
 **What requires internet:** only downloading the model file once before first use.
 
 **Models used:** Gemma 4 E2B (Google; LiteRT-LM `.litertlm` on device, `gemma4:e2b` in Ollama). Sailor2-1B-Chat
-(Sea AI Lab) with our Waray LoRA fine-tune, evaluated and kept as an alternative (not the demo default).
+(Sea AI Lab): the base model was compared against Gemma and lost; our teammate trained a Waray LoRA fine-tune of
+it (4/25 → 10/25 held-out Waray prompts, AI-reviewed), which is not in the app yet.
 
 **Technologies & frameworks:** Kotlin, Jetpack Compose, Google LiteRT-LM 0.17.1, Ollama 0.40.1, JUnit.
 Training: PyTorch, Hugging Face Transformers, PEFT, TRL, bitsandbytes, llama.cpp (GGUF export).
@@ -43,7 +46,8 @@ training scripts (docs/ANTIGRAVITY_HANDOFF.md).
 ## Demo plan (5 minutes)
 
 **Which AI mode to show.** On the emulator, the on-device model takes 35–70 s per reply (CPU only), too slow for
-stage. Use **laptop mode** live (Gemma 4 on the laptop GPU, about 1 s, still fully offline) and say so; show the
+stage. Use **laptop mode** live (Gemma 4 on the laptop GPU, about 1 s once loaded, still fully offline) and **say
+out loud that the live demo runs the model on the laptop, not the phone**; show the
 **on-device run in the video**. To switch the emulator to laptop mode, hide the model file; to switch back, restore it:
 
 ```powershell
@@ -63,8 +67,9 @@ Restart the app after switching.
 4. (45 s) Follow-up: *"What if he can't drink?"* → the AI remembers the conversation; banner adds the danger sign.
 5. (45 s) Safety: *"What medicine and how many mg?"* → the AI declines and gives first-aid steps; explain the
    guardrail and the evidence (base model invented child doses, ice on burns).
-6. (45 s) How it's local: same app runs Gemma 4 E2B on the phone with LiteRT-LM (show the video clip); model
-   comparison table; Waray fine-tune by our teammate.
+6. (45 s) How it's local: "What you just saw ran on this laptop's GPU. The same app also runs Gemma 4 E2B inside
+   Android with LiteRT-LM" (show the emulator video clip; say it is the emulator, 35–70 s per reply on CPU); model
+   comparison table; Waray fine-tune by our teammate (trained, not in the app yet).
 7. (30 s) Close: "Every family in Eastern Visayas has a phone. Not every family has signal."
 
 ## Q&A prep
@@ -72,9 +77,10 @@ Restart the app after switching.
 - **Why local?** Offline is when it's needed; health data is private. Both must-haves.
 - **What runs offline?** Everything after the one-time model download.
 - **Who is it for?** Parents and caregivers in Waray-speaking provinces, at night or during typhoons, far from care.
-- **Why Gemma and not your fine-tuned model?** We tested both on the same 10 questions; Gemma with our grounded
-  prompt was the only setup with short, safe answers. The Waray LoRA (Sailor2-1B, +150% on held-out Waray prompts
-  under AI review) is our next step for better Waray.
+- **Why Gemma and not your fine-tuned model?** We compared Gemma against the **base** Sailor2-1B on the same 10
+  questions; Gemma with our grounded prompt was the only setup with short, safe answers. The fine-tuned model file
+  wasn't ready in time to test in the app. On its own held-out set it went from 4/25 to 10/25 Waray prompts passing
+  (judged by an AI, not a native speaker), so it's our next step for better Waray.
 - **How do you stop wrong medical advice?** Danger signs never depend on the AI; answers are grounded on checked
   cards; a deterministic guardrail hides medicines, doses, diagnoses, myths, and wrong emergency numbers.
 - **Was it tested on a real phone?** Not yet; verified on the Android emulator running the model on-device.
