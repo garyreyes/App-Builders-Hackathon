@@ -36,6 +36,27 @@ message ──► triage (keywords) ──► danger banner + topic card      (i
 
 ## Run it
 
+### Fast path for judges
+
+Download `OfflineHealth-debug.apk` and `waray-chat-v3-q8_0.gguf` from the
+[Android judge demo release](https://github.com/garyreyes/Buha.ai/releases/tag/android-judge-demo-v1).
+With an Android phone or emulator connected through ADB, run these commands from the download folder:
+
+```powershell
+adb install -r OfflineHealth-debug.apk
+adb shell am start -n ph.appbuilders.offlinehealth/.MainActivity
+adb shell mkdir -p /sdcard/Android/data/ph.appbuilders.offlinehealth/files
+adb push waray-chat-v3-q8_0.gguf /sdcard/Android/data/ph.appbuilders.offlinehealth/files/
+adb shell am force-stop ph.appbuilders.offlinehealth
+adb shell am start -n ph.appbuilders.offlinehealth/.MainActivity
+```
+
+Choose **Winaray** on the first screen. After the model loads, the chat works in airplane mode. The GGUF is
+1,056,199,072 bytes; SHA-256: `97e54275b4814fde219d224d2ffe1cdeafc04339564036dbcff31e42f371d6b0`.
+The APK does not request Internet permission. If the model file is absent, the app opens in basic mode.
+
+### Build from source
+
 **Needs:** Android Studio (or JDK 17 + Android SDK 37, NDK 29.0.13113456, and CMake 3.31.6), an arm64 Android phone
 (6 GB RAM suggested) **or** the Android emulator (x86_64, 4 GB RAM), and about 2 GB free on the device.
 
