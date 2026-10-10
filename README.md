@@ -97,6 +97,9 @@ file can also run locally as a fallback; the trained Sailor2 GGUF takes priority
   [docs/PROGRESS_TRACKING.md](docs/PROGRESS_TRACKING.md): see Run 04 results and limitations). The v3 Q8_0 GGUF is the current Android model.
 - **Runtimes and frameworks:** llama.cpp at pinned commit `6184e92`, optional Google LiteRT-LM 0.17.1, Kotlin 2.4,
   Jetpack Compose. Training: PyTorch, Transformers, PEFT, TRL, bitsandbytes, llama.cpp (GGUF export).
+- **Existing code and assets:** llama.cpp (MIT) as a submodule in `android/third_party/llama.cpp`; `android/llama-runtime`
+  is adapted from llama.cpp's Android example (`com.arm.aichat`, [license](android/llama-runtime/LLAMA_LICENSE));
+  Atkinson Hyperlegible Next font (Braille Institute, SIL OFL).
 - **Content:** prototype first-aid cards based on DOH/WHO guidance, with AI-drafted regional-language text.
 - **Training data** ([credits](docs/DATASET_CREDITS.md)): AI-generated Waray pairs, reviewed by Google Gemini
   (`gemini-3.8-flash`, recorded in each row's `reviewed_by`), and
