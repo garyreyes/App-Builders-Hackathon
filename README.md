@@ -1,6 +1,7 @@
 # Offline Health Helper
 
-**An AI first-aid helper that runs entirely on the phone, in Waray, Bisaya, Tagalog, and English.**
+**An AI first-aid helper that runs on-device on Android, in Waray, Bisaya, Tagalog, and English.**
+(Verified on the Android emulator; not yet tested on a physical phone. See [Honest status](#honest-status).)
 For a parent in Samar or Leyte whose child is sick at night, during a typhoon, with no signal and the health
 center far away. They type what is happening in their own language; the app answers right away, offline.
 
@@ -31,7 +32,7 @@ AppBuildersPH Hackathon 2026 · Team: [@garyreyes](https://github.com/garyreyes)
 ```
 message ──► triage (keywords) ──► danger banner + topic card      (instant, no AI)
         └─► prompt = safety rules + checked card + user's language
-            ──► Gemma 4 E2B on the phone (LiteRT-LM) ──► guardrail ──► reply, or the full card if blocked
+            ──► Gemma 4 E2B on the device (LiteRT-LM) ──► guardrail ──► reply, or the full card if blocked
 ```
 
 ## Run it
@@ -74,7 +75,9 @@ See [ollama/README.md](ollama/README.md).
 - **Gemma 4 E2B** (Google): the demo model. On-device file from `litert-community/gemma-4-E2B-it-litert-lm`;
   `gemma4:e2b` in Ollama for laptop mode.
 - **Sailor2-1B-Chat** (Sea AI Lab), with a **LoRA fine-tune on Waray** by @yezdenz (code in [training/](training/README.md), results in
-  [docs/PROGRESS_TRACKING.md](docs/PROGRESS_TRACKING.md): 10/25 vs 4/25 held-out Waray prompts, AI-reviewed). Gemma replaced it in the demo after a 10-question side-by-side test (see "How we chose the model").
+  [docs/PROGRESS_TRACKING.md](docs/PROGRESS_TRACKING.md): 10/25 vs 4/25 held-out Waray prompts, AI-reviewed, not
+  native-speaker reviewed). The fine-tuned model file was not ready in time to put in the app, so it was **not** in
+  the 10-question side-by-side test below; that test compared **base** Sailor2-1B against Gemma, and Gemma won.
 - **Runtimes and frameworks:** Google LiteRT-LM 0.17.1 (Android), Ollama 0.40.1 (laptop), Kotlin 2.4,
   Jetpack Compose. Training: PyTorch, Transformers, PEFT, TRL, bitsandbytes, llama.cpp (GGUF export).
 - **Content:** first-aid cards based on DOH/WHO guidance. Waray, Bisaya, and Tagalog text is AI-drafted and **not
@@ -104,9 +107,9 @@ Details: [docs/PROJECT_FACTS.md](docs/PROJECT_FACTS.md) and [docs/DECISIONS.md](
 
 - Verified on the **Android emulator** (on-device Gemma, no laptop connection): correct burn and medicine-trap
   answers, Waray UI, danger banner. Emulator CPU replies take 35–70 s; **a real phone has not been tested yet**.
-- Laptop mode (Ollama on the RTX 4050): replies in about 1 s.
-- Gemma's Waray mixes in Bisaya/Tagalog; the trained Sailor2 Waray model can be swapped in for testing
-  ([ollama/README.md](ollama/README.md)).
+- Laptop mode (Ollama on the RTX 4050): about 1 s per reply once the model is loaded; up to ~7 s when it is not.
+- Gemma's Waray mixes in Bisaya/Tagalog. The app is ready to swap in the trained Sailor2 Waray model
+  ([ollama/README.md](ollama/README.md)), but that model file has not been delivered or tested in the app yet.
 - Covered topics with checked cards: child diarrhea, fever, burns. Other questions get an AI answer with the same
   guardrail, and danger signs are always checked.
 - Not a doctor and not a diagnosis tool.
