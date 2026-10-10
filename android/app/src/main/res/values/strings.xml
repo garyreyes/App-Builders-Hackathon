@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Launcher label only (working name). In-app copy comes from ContentSource.uiString(), never from here. -->
-    <string name="app_name">Offline Health Helper</string>
+    <string name="app_name">Buha.ai</string>
 </resources>

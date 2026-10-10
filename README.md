@@ -1,4 +1,4 @@
-# Offline Health Helper
+# Buha.ai
 
 **An AI first-aid helper that runs on-device on Android, in Waray, Bisaya, Tagalog, and English.**
 (Verified on the Android emulator; not yet tested on a physical phone. See [Honest status](#honest-status).)
