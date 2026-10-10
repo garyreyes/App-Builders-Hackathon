@@ -5,7 +5,7 @@ before submitting (one submission only, no edits).
 
 ## Form fields
 
-**Project name:** Offline Health Helper
+**Project name:** Buha.ai
 
 **Short description:**
 An AI first-aid helper that runs entirely on the phone in Waray, Bisaya, Tagalog, and English. A parent whose child

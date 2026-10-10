@@ -1,4 +1,4 @@
-# Offline Health Helper
+# Buha.ai
 
 **An AI first-aid helper that runs entirely on the phone, in Waray, Bisaya, Tagalog, and English.**
 For a parent in Samar or Leyte whose child is sick at night, during a typhoon, with no signal and the health
