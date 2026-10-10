@@ -23,23 +23,14 @@ Relative repository path:
 models/waray-chat-v3-q8_0.gguf
 ```
 
-## 3. Where to Upload the Model File
+## 3. Direct Model Download Link
 
-Because the model file exceeds GitHub standard commit limits, upload it to one of these public download locations:
+Judges and evaluators can download the model file directly from:
 
-1. **GitHub Releases (Recommended for Judges)**
-   * Go to your repository Releases page:
-     `https://github.com/garyreyes/Buh.ai/releases`
-   * Edit or create a release (example: tag `android-judge-demo-v1`).
-   * Attach `waray-chat-v3-q8_0.gguf` alongside `app-debug.apk`.
+* **Google Drive:** [Download waray-chat-v3-q8_0.gguf](https://drive.google.com/file/d/1fRTNdmZqy1dSIY1vnGZHeTxD_oViEuPE/view?usp=sharing)
+* **GitHub Release:** [Android judge demo release](https://github.com/garyreyes/Buh.ai/releases/tag/android-judge-demo-v1)
 
-2. **Hugging Face Model Hub**
-   * Create a free model repository on Hugging Face (example: `your-username/buhai-waray-sailor2-gguf`).
-   * Upload `waray-chat-v3-q8_0.gguf`.
-   * Fast, reliable direct download link for judges and developers.
-
-3. **Google Drive or Cloud Storage**
-   * Upload the file and set sharing to anyone with the link.
+After downloading, follow the steps below to push the file to the device.
 
 ## 4. How to Install and Run on Android (For Judges and Testers)
 
@@ -83,3 +74,4 @@ adb shell am start -n ph.appbuilders.offlinehealth/.MainActivity
 If the model file is not transferred to the device, the app safely defaults to basic local mode:
 * Danger sign detection and red emergency banners still trigger immediately.
 * Reviewed first aid cards remain accessible.
+

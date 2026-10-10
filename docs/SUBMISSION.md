@@ -5,7 +5,7 @@ before submitting (one submission only, no edits).
 
 Use the [Android judge demo release](https://github.com/garyreyes/Buh.ai/releases/tag/android-judge-demo-v1)
 for the APK and trained GGUF. The [README](../README.md#fast-path-for-judges) has the ADB commands to install,
-copy the model, and open the app. The release assets are separate because the 1 GB model must stay out of Git.
+copy the model, and open the app (or download the model directly from [Google Drive](https://drive.google.com/file/d/1fRTNdmZqy1dSIY1vnGZHeTxD_oViEuPE/view?usp=sharing)). The release assets are separate because the 1 GB model must stay out of Git.
 
 ## Form fields
 
