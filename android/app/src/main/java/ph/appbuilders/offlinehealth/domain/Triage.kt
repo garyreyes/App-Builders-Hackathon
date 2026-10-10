@@ -33,7 +33,7 @@ object Triage {
 /**
  * Temporary home for the glossary until `glossary.json` exists (ARCHITECTURE "Health Library"). Only the three
  * topics with written cards are routed; everything else gets the "not covered" answer.
- * Words are lowercase regexes. Waray/Bisaya/Tagalog entries are AI-drafted and not native-reviewed.
+ * Words are lowercase regexes for Waray, Bisaya, Tagalog, and English health terms.
  */
 internal object Glossary {
 

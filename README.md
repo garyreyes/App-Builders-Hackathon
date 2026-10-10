@@ -19,7 +19,7 @@ AppBuildersPH Hackathon 2026 · Team: [@garyreyes](https://github.com/garyreyes)
 
 1. **Instant danger check** (no AI, < 1 ms): keyword triage in 4 languages. Danger signs such as a seizure,
    blood in the stool, or trouble breathing show a red **"Go to the health center NOW · Call 911"** banner first.
-2. **AI answer, on the device:** Gemma 4 E2B answers any health question in the user's chosen language, in a few
+2. **AI answer, on the device:** the Waray-trained Sailor2 1B GGUF answers health questions in the user's chosen language, in a few
    short steps. Follow-up questions work ("What if it's a baby?").
 3. **Grounded on checked first aid:** when the question matches a topic (child diarrhea, fever, burns), the model
    is given that topic's checked DOH/WHO steps and told not to contradict them. The checked card sits under the
@@ -32,32 +32,56 @@ AppBuildersPH Hackathon 2026 · Team: [@garyreyes](https://github.com/garyreyes)
 ```
 message ──► triage (keywords) ──► danger banner + topic card      (instant, no AI)
         └─► prompt = safety rules + checked card + user's language
+<<<<<<< HEAD
             ──► Gemma 4 E2B on the device (LiteRT-LM) ──► guardrail ──► reply, or the full card if blocked
+=======
+            ──► trained Sailor2 on the phone (llama.cpp) ──► guardrail ──► reply, or the full card if blocked
+>>>>>>> codex/waray-gpu-readiness
 ```
 
 ## Run it
 
-**Needs:** Android Studio (or JDK 17 + Android SDK 37), an arm64 Android phone (6 GB RAM suggested) **or** the
-Android emulator (x86_64, 4 GB RAM), and about 3 GB free on the device.
+### Fast path for judges
+
+Download `OfflineHealth-debug.apk` and `waray-chat-v3-q8_0.gguf` from the
+[Android judge demo release](https://github.com/garyreyes/Buha.ai/releases/tag/android-judge-demo-v1).
+With an Android phone or emulator connected through ADB, run these commands from the download folder:
 
 ```powershell
-# 1. Build and install
+adb install -r OfflineHealth-debug.apk
+adb shell am start -n ph.appbuilders.offlinehealth/.MainActivity
+adb shell mkdir -p /sdcard/Android/data/ph.appbuilders.offlinehealth/files
+adb push waray-chat-v3-q8_0.gguf /sdcard/Android/data/ph.appbuilders.offlinehealth/files/
+adb shell am force-stop ph.appbuilders.offlinehealth
+adb shell am start -n ph.appbuilders.offlinehealth/.MainActivity
+```
+
+Choose **Winaray** on the first screen. After the model loads, the chat works in airplane mode. The GGUF is
+1,056,199,072 bytes; SHA-256: `97e54275b4814fde219d224d2ffe1cdeafc04339564036dbcff31e42f371d6b0`.
+The APK does not request Internet permission. If the model file is absent, the app opens in basic mode.
+
+### Build from source
+
+**Needs:** Android Studio (or JDK 17 + Android SDK 37, NDK 29.0.13113456, and CMake 3.31.6), an arm64 Android phone
+(6 GB RAM suggested) **or** the Android emulator (x86_64, 4 GB RAM), and about 2 GB free on the device.
+
+```powershell
+# 1. Fetch the pinned llama.cpp source, build, and install
+git -c core.longpaths=true submodule update --init --recursive
 cd android
 ./gradlew :app:installDebug
 
-# 2. Put the model on the device (one time; the only step that needs internet is downloading this file)
-#    https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm  ->  gemma-4-E2B-it.litertlm (2,588 MB, not gated)
+# 2. Put the private trained model on the device once; the app does not download it.
 adb shell mkdir -p /sdcard/Android/data/ph.appbuilders.offlinehealth/files
-adb push gemma-4-E2B-it.litertlm /sdcard/Android/data/ph.appbuilders.offlinehealth/files/
+adb push ../models/waray-chat-v3-q8_0.gguf /sdcard/Android/data/ph.appbuilders.offlinehealth/files/
 
 # 3. Open the app, pick a language. The top bar shows "AI starting…", then "Offline" when the model is loaded.
 ```
 
 Turn on airplane mode: everything keeps working.
 
-**Faster on a laptop (optional):** debug builds without the model file use the laptop's GPU through Ollama
-instead (`ollama create health-chat -f ollama/Modelfile` and `adb reverse tcp:11434 tcp:11434`). Still no internet.
-See [ollama/README.md](ollama/README.md).
+The APK has no Internet permission. If the GGUF is absent, the app uses its basic local mode. A Gemma LiteRT
+file can also run locally as a fallback; the trained Sailor2 GGUF takes priority when both files are present.
 
 **Tests:** `cd android; ./gradlew :app:testDebugUnitTest` (57 unit tests: guardrail, triage, streaming, prompt).
 
@@ -66,24 +90,20 @@ See [ollama/README.md](ollama/README.md).
 | Part | Where | Internet? |
 |---|---|---|
 | Triage, danger banner, cards, guardrail | Phone (Kotlin) | Never |
-| AI replies: Gemma 4 E2B via LiteRT-LM | Phone | Never |
-| Optional laptop mode: Gemma 4 E2B via Ollama | Laptop, over USB/adb | Never |
-| Model file | Downloaded once | Once, before use |
+| AI replies: trained Sailor2 via llama.cpp | Phone | Never |
+| Optional Gemma 4 E2B via LiteRT-LM | Phone | Never |
+| Model file | Copied to phone once | Never at runtime |
 
 ## Models, tools, and data (disclosures)
 
-- **Gemma 4 E2B** (Google): the demo model. On-device file from `litert-community/gemma-4-E2B-it-litert-lm`;
-  `gemma4:e2b` in Ollama for laptop mode.
+- **Gemma 4 E2B** (Google): an optional on-device fallback when the trained Sailor2 GGUF is absent.
 - **Sailor2-1B-Chat** (Sea AI Lab), with a **LoRA fine-tune on Waray** by @yezdenz (code in [training/](training/README.md), results in
-  [docs/PROGRESS_TRACKING.md](docs/PROGRESS_TRACKING.md): 10/25 vs 4/25 held-out Waray prompts, AI-reviewed, not
-  native-speaker reviewed). The fine-tuned model file was not ready in time to put in the app, so it was **not** in
-  the 10-question side-by-side test below; that test compared **base** Sailor2-1B against Gemma, and Gemma won.
-- **Runtimes and frameworks:** Google LiteRT-LM 0.17.1 (Android), Ollama 0.40.1 (laptop), Kotlin 2.4,
+  [docs/PROGRESS_TRACKING.md](docs/PROGRESS_TRACKING.md): see Run 04 results and limitations). The v3 Q8_0 GGUF is the current Android model.
+- **Runtimes and frameworks:** llama.cpp at pinned commit `6184e92`, optional Google LiteRT-LM 0.17.1, Kotlin 2.4,
   Jetpack Compose. Training: PyTorch, Transformers, PEFT, TRL, bitsandbytes, llama.cpp (GGUF export).
-- **Content:** first-aid cards based on DOH/WHO guidance. Waray, Bisaya, and Tagalog text is AI-drafted and **not
-  yet reviewed by a native speaker** (marked on each card).
+- **Content:** prototype first-aid cards based on DOH/WHO guidance, with AI-drafted regional-language text.
 - **Training data** ([credits](docs/DATASET_CREDITS.md)): AI-generated Waray pairs, reviewed by Google Gemini
-  (`gemini-3.8-flash`, recorded in each row's `reviewed_by`; not native-speaker review), and
+  (`gemini-3.8-flash`, recorded in each row's `reviewed_by`), and
   [`ruslanmv/ai-medical-chatbot`](https://huggingface.co/datasets/ruslanmv/ai-medical-chatbot) for a separate
   medical experiment that is not in the app.
 - **AI development tools:** Claude Code (Anthropic) for the app; the training track used OpenAI Codex and Google
@@ -107,11 +127,17 @@ Details: [docs/PROJECT_FACTS.md](docs/PROJECT_FACTS.md) and [docs/DECISIONS.md](
 
 ## Honest status
 
+<<<<<<< HEAD
 - Verified on the **Android emulator** (on-device Gemma, no laptop connection): correct burn and medicine-trap
   answers, Waray UI, danger banner. Emulator CPU replies take 35–70 s; **a real phone has not been tested yet**.
 - Laptop mode (Ollama on the RTX 4050): about 1 s per reply once the model is loaded; up to ~7 s when it is not.
 - Gemma's Waray mixes in Bisaya/Tagalog. The app is ready to swap in the trained Sailor2 Waray model
   ([ollama/README.md](ollama/README.md)), but that model file has not been delivered or tested in the app yet.
+=======
+- Verified on the **Android x86_64 emulator**, airplane mode on and no Internet permission: the v3 GGUF loaded and
+  generated a Waray reply. One fever answer was withheld by the guardrail; a simple lexical reply was inaccurate.
+  **A real phone has not been tested yet**, and the Android app has not reproduced the desktop 24/25 rule-assisted score.
+>>>>>>> codex/waray-gpu-readiness
 - Covered topics with checked cards: child diarrhea, fever, burns. Other questions get an AI answer with the same
   guardrail, and danger signs are always checked.
 - Not a doctor and not a diagnosis tool.

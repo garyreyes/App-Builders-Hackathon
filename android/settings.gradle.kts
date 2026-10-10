@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "OfflineHealth"
 include(":app")
+include(":llama-runtime")

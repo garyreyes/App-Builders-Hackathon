@@ -13,7 +13,8 @@ measurements or Waray speaker evaluation contradict it, and record the changed e
 | Text chat before speech input | Lets each model's errors be measured separately | Chosen |
 | **Product: offline health helper, 7 first-aid topics, 4 languages** | Owner's combined plan, 2026-10-09 ~22:50 | **Chosen** |
 | **Sailor2-1B-Chat GGUF on llama.cpp** | Owner's combined plan. Published Waray coverage, 0.74 GB Q4_K_M | **Chosen**; laptop baseline tested (see below), phone untested |
-| LoRA on reviewed Waray chat pairs | Adapts chat behavior without training a new foundation model | **Done (Run 03, @yezdenz, Oct 9–10):** 10/25 held-out prompts pass all four checks vs 4/25 baseline, naturalness 18/25 vs 9/25 (AI-reviewed). GGUF exported; not yet compared on the app's 10 questions (docs/PROGRESS_TRACKING.md) |
+| LoRA on reviewed Waray chat pairs | Adapts chat behavior without training a new foundation model | **Run 04:** 265 private train rows, rank 16/alpha 32, four epochs on RTX 4050; 12/25 all-criteria model-only pass in an AI author review. V3 Q8_0 GGUF exported. App and native-speaker evaluation pending. |
+| Offline fact and policy layer before model fallback | The 1B adapter still confused stable facts and vocabulary | Desktop reference `training/offline_knowledge.py` reached 24/25 with model fallback on the same known questions in an AI author review. This layer is not yet in Android; the score is not a fresh generalization estimate. |
 | AI review for an experimental prototype | No fluent Waray reviewer available; owner asked for an AI-led path on Oct 9 | Active; reviewer model and method recorded per row. Native-speaker validation still needed before any quality claim |
 | Keyword glossary routes topics + danger signs | Sailor2-1B baseline failed JSON classification on Oct 9 | Chosen |
 | Deterministic guardrail on every model reply | Sailor2-1B baseline invented doses and suggested antibiotics on Oct 9 | Chosen |
@@ -121,8 +122,8 @@ measurements or Waray speaker evaluation contradict it, and record the changed e
   cards (`content/DemoCards.kt`), so triage (`domain/Triage.kt`, glossary in Kotlin until `glossary.json`) routes
   only to them, and Topics lists only them. Every other message gets the "not covered" answer, which already lists
   what the app can help with. Danger signs are detected in all four languages whatever the app language.
-  "Dugo"/"blood" counts as blood in the stool only around diarrhea words. **Unreviewed:** the Waray card text and
-  the new Bisaya burn/fever text are AI-drafted; each card's source line says so. Tagalog shows English cards.
+  "Dugo"/"blood" counts as blood in the stool only around diarrhea words. The Waray card text and
+  the new Bisaya burn/fever text are AI-drafted prototype copy. Tagalog shows English cards.
 - **Decision 5, AI-first chat (Oct 10, ~02:30):** the owner judged that cards + a footnote reply don't read as a
   local-LLM app. Now every message gets a model reply (even with no matching card), follow-ups see the last 3
   answered exchanges, and the reply is the main bubble with the card folded into a "Checked first-aid steps" row.
@@ -134,3 +135,10 @@ measurements or Waray speaker evaluation contradict it, and record the changed e
   "5 minutes" instead of 20 for cooling a burn (the card below has the right step). The guardrail also now blocks
   known first-aid myths and non-911 emergency numbers. The trained Sailor2 can be swapped in (`Modelfile.sailor2`)
   and must beat Gemma on the same 10 questions to replace it.
+
+- **Decision 7, trained Sailor2 inside Android (Oct 10):** the owner requires the trained v3 GGUF to run on the device,
+  fully offline. The app now prefers `waray-chat-v3-q8_0.gguf` in its external files directory and runs it through a
+  pinned llama.cpp JNI module; Gemma LiteRT remains an on-device fallback. Debug and release APKs have no Internet
+  permission and no Ollama inference path. On an x86_64 API 37 emulator with airplane mode on, v3 loaded and generated
+  a Waray reply; a fever response was withheld by the existing guardrail, and a lexical response was inaccurate.
+  Native-speaker and clinician review, ARM64 physical phone performance, and API 28 behavior remain unverified.

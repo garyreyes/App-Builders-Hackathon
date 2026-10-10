@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EF5350" />
+      <stop offset="50%" stop-color="#E53935" />
+      <stop offset="100%" stop-color="#C62828" />
+    </linearGradient>
+    <filter id="iconShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#B71C1C" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Red Squircle Base -->
+  <rect width="512" height="512" rx="112" fill="url(#redGradient)" filter="url(#iconShadow)" />
+
+  <!-- Subtle Medical Background Cross -->
+  <path d="M256 100 V412 M100 256 H412" stroke="#FFFFFF" stroke-width="64" stroke-linecap="round" opacity="0.14" />
+
+  <!-- Giant Bold White Letter B -->
+  <path d="M 160 110 
+           L 290 110 
+           C 345 110, 385 142, 385 188 
+           C 385 224, 355 248, 318 256 
+           C 368 266, 402 296, 402 344 
+           C 402 396, 350 428, 290 428 
+           L 160 428 
+           Z 
+           M 224 165 
+           L 224 238 
+           L 282 238 
+           C 310 238, 326 222, 326 200 
+           C 326 178, 310 165, 282 165 
+           Z 
+           M 224 285 
+           L 224 372 
+           L 288 372 
+           C 318 372, 338 356, 338 328 
+           C 338 302, 318 285, 288 285 
+           Z" 
+        fill="#FFFFFF" />
+
+  <!-- Heartbeat Pulse Accent Line cutting through B lower loop -->
+  <path d="M 120 256 H 200 L 220 220 L 246 295 L 268 240 L 286 265 L 300 256 H 400" 
+        stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity="0.95" />
+</svg>
+

@@ -125,6 +125,14 @@ class LlmChatServiceTest {
         val danger = withCard.copy(dangers = listOf(DangerMessage(DangerSignId.BLOOD_IN_STOOL, "Blood in the stool.")))
         val client = FakeClient(chunks = listOf("It's not serious. "))
         assertEquals(AiReplyState.Withheld, service(client, danger).states().last())
+        assertEquals(0, client.replies)
+    }
+
+    @Test fun emergencyNeverCallsModelEvenWhenItsBadAdviceEvadesTermFilter() = runTest {
+        val danger = withCard.copy(dangers = listOf(DangerMessage(DangerSignId.BLOOD_IN_STOOL, "Blood in the stool.")))
+        val client = FakeClient(chunks = listOf("Put the child in hot water for ten minutes. "))
+        assertEquals(AiReplyState.Withheld, service(client, danger).states().last())
+        assertEquals(0, client.replies)
     }
 
     @Test fun unreachableModelMeansBasicMode() = runTest {

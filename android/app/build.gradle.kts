@@ -21,19 +21,6 @@ android {
             abiFilters += listOf("arm64-v8a", "x86_64")
         }
 
-        // Release stays on the fakes and has no INTERNET permission (PRD). See ollama/README.md.
-        buildConfigField("boolean", "USE_OLLAMA", "false")
-        buildConfigField("String", "OLLAMA_URL", "\"\"")
-        buildConfigField("String", "OLLAMA_MODEL", "\"\"")
-    }
-
-    buildTypes {
-        debug {
-            // Demo bridge: the laptop's Ollama, reached over USB with `adb reverse tcp:11434 tcp:11434`.
-            buildConfigField("boolean", "USE_OLLAMA", "true")
-            buildConfigField("String", "OLLAMA_URL", "\"http://127.0.0.1:11434\"")
-            buildConfigField("String", "OLLAMA_MODEL", "\"health-chat\"")
-        }
     }
 
     compileOptions {
@@ -61,6 +48,7 @@ dependencies {
 
     // On-phone AI runtime (Google LiteRT-LM), same pin as spikes/android-llm: 0.18.0 was days old on Oct 9.
     implementation("com.google.ai.edge.litertlm:litertlm-android:0.17.1")
+    implementation(project(":llama-runtime"))
 
     testImplementation("junit:junit:4.13.2")
     // Android's org.json is a stub in JVM unit tests; this is the real one.

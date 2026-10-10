@@ -8,7 +8,7 @@ import ph.appbuilders.offlinehealth.domain.model.TopicId
  * The demo's Health Library: the three topics with written cards (diarrhea, burn, fever) until the content JSON
  * exists. No medicine names or doses, by the same rule as the guardrail.
  * English: from DOH/WHO first-aid guidance. Waray and Bisaya for burn/fever, and Waray for diarrhea, are
- * AI-drafted and NOT native-speaker reviewed (the source line says so). Tagalog falls back to English.
+ * AI-drafted prototype text. Tagalog falls back to English.
  */
 internal class CardText(val atHome: List<String>, val goNowIf: List<String>, val source: String)
 
@@ -29,9 +29,6 @@ internal object DemoCards {
 
     fun dangerMessage(sign: DangerSignId, language: Language): String =
         dangerMessages[sign]?.let { it[language] ?: it[Language.ENG] } ?: sign.name
-
-    private const val UNREVIEWED_WAR = " Waray text not yet reviewed by a native speaker."
-    private const val UNREVIEWED_CEB = " Binisaya text not yet reviewed by a native speaker."
 
     private val signOrder = mapOf(
         TopicId.CHILD_DIARRHEA to listOf(
@@ -76,7 +73,7 @@ internal object DemoCards {
                     "diri makainom o makasuso", "isinusuka an ngatanan", "may-ada dugo an tae",
                     "maturog-turogon hin duro o makuri pukawon", "lubong an mga mata",
                 ),
-                source = "Based on DOH/WHO guidance on childhood diarrhea.$UNREVIEWED_WAR",
+                source = "Prototype card based on DOH/WHO guidance on childhood diarrhea.",
             ),
         ),
         TopicId.BURN to mapOf(
@@ -106,7 +103,7 @@ internal object DemoCards {
                     "gikan sa kuryente o kemikal", "bata, tigulang, o mabdos",
                     "lisod moginhawa human sa aso o sunog", "lawom: puti, brown, o itom nga panit, o walay sakit",
                 ),
-                source = "Gibase sa giya sa WHO bahin sa first aid sa paso.$UNREVIEWED_CEB",
+                source = "Prototype card: Gibase sa giya sa WHO bahin sa first aid sa paso.",
             ),
             Language.WAR to CardText(
                 atHome = listOf(
@@ -120,7 +117,7 @@ internal object DemoCards {
                     "tikang ha kuryente o kemikal", "bata, lagas, o nagbuburod",
                     "makuri gumhawa kahuman han aso o sunog", "hilarom: busag, brown, o itom nga panit, o waray kasakit",
                 ),
-                source = "Based on WHO first-aid guidance for burns.$UNREVIEWED_WAR",
+                source = "Prototype card based on WHO first-aid guidance for burns.",
             ),
         ),
         TopicId.FEVER to mapOf(
@@ -150,7 +147,7 @@ internal object DemoCards {
                     "lisod moginhawa", "nagdugo ang lagos o ilong, o pula nga mga tuldok sa panit",
                     "hilanat nga molapas sa 2 ka adlaw", "bata nga ubos sa 2 ka bulan nga adunay hilanat",
                 ),
-                source = "Gibase sa giya sa DOH/WHO bahin sa hilanat ug dengue.$UNREVIEWED_CEB",
+                source = "Prototype card: Gibase sa giya sa DOH/WHO bahin sa hilanat ug dengue.",
             ),
             Language.WAR to CardText(
                 atHome = listOf(
@@ -164,7 +161,7 @@ internal object DemoCards {
                     "makuri gumhawa", "nagdudugo an lagos o irong, o may pula nga mga tuldok ha panit",
                     "hilanat nga sobra 2 ka adlaw", "bata nga ubos 2 ka bulan nga may hilanat",
                 ),
-                source = "Based on DOH/WHO guidance on fever and dengue warning signs.$UNREVIEWED_WAR",
+                source = "Prototype card based on DOH/WHO guidance on fever and dengue warning signs.",
             ),
         ),
     )

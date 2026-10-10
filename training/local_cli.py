@@ -137,18 +137,19 @@ def answer(tokenizer, model, prompt: str, max_new_tokens: int) -> tuple[str, flo
         [{"role": "user", "content": prompt}],
         add_generation_prompt=True,
         return_tensors="pt",
+        return_dict=True,
     ).to("cuda")
     torch.cuda.synchronize()
     started = time.perf_counter()
     with torch.inference_mode():
         result = model.generate(
-            inputs,
+            **inputs,
             max_new_tokens=max_new_tokens,
             do_sample=False,
             pad_token_id=tokenizer.eos_token_id,
         )
     torch.cuda.synchronize()
-    reply = tokenizer.decode(result[0][inputs.shape[-1] :], skip_special_tokens=True).strip()
+    reply = tokenizer.decode(result[0][inputs["input_ids"].shape[-1] :], skip_special_tokens=True).strip()
     return reply, round(time.perf_counter() - started, 2)
 
 
@@ -251,7 +252,9 @@ def train(args, train_rows: list[dict], test: list[dict], reviewed: list[dict]) 
         gradient_accumulation_steps=8,
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={"use_reentrant": False},
-        learning_rate=1e-4,
+        learning_rate=args.learning_rate,
+        lr_scheduler_type="cosine",
+        warmup_ratio=0.05,
         num_train_epochs=args.epochs,
         max_steps=args.max_steps,
         bf16=torch.cuda.is_bf16_supported(),
@@ -273,7 +276,7 @@ def train(args, train_rows: list[dict], test: list[dict], reviewed: list[dict]) 
         args=settings,
         train_dataset=dataset,
         peft_config=LoraConfig(
-            r=8, lora_alpha=16, lora_dropout=0.05,
+            r=args.lora_rank, lora_alpha=args.lora_alpha, lora_dropout=0.05,
             target_modules=target_modules,
             bias="none", task_type="CAUSAL_LM",
         ),
@@ -298,9 +301,10 @@ def train(args, train_rows: list[dict], test: list[dict], reviewed: list[dict]) 
             "adapted_naturalness": "",
             "adapted_language_choice": "",
             "adapted_no_invented_facts": "",
+            "adapted_reviewed_by": "",
         })
         print(f"Adapted {position}/{len(test)}: {seconds}s", flush=True)
-    columns = (*BASELINE_COLUMNS, "adapted_reply", "adapted_seconds", *[f"adapted_{x}" for x in RATING_COLUMNS])
+    columns = (*BASELINE_COLUMNS, "adapted_reply", "adapted_seconds", *[f"adapted_{x}" for x in RATING_COLUMNS], "adapted_reviewed_by")
     write_csv(args.output / "comparison.csv", columns, comparison)
     manifest = {
         "status": "completed; awaiting human comparison review",
@@ -320,6 +324,12 @@ def train(args, train_rows: list[dict], test: list[dict], reviewed: list[dict]) 
         "max_length": args.max_length,
         "max_steps": args.max_steps,
         "epochs": args.epochs,
+        "learning_rate": args.learning_rate,
+        "lr_scheduler_type": "cosine",
+        "warmup_ratio": 0.05,
+        "lora_rank": args.lora_rank,
+        "lora_alpha": args.lora_alpha,
+        "target_modules": target_modules,
         "note": "Adapter and comparison need independent review and Android phone testing; AI review does not establish native-speaker quality",
     }
     run_file.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -339,8 +349,11 @@ def main() -> int:
         if name == "train":
             command.add_argument("--baseline-review", type=Path, required=True)
             command.add_argument("--max-length", type=int, default=256)
-            command.add_argument("--max-steps", type=int, default=-1, help="-1 trains for one epoch")
-            command.add_argument("--epochs", type=int, default=1, help="training epochs when --max-steps is -1")
+            command.add_argument("--max-steps", type=int, default=-1, help="-1 trains for the configured number of epochs")
+            command.add_argument("--epochs", type=int, default=4, help="training epochs when --max-steps is -1")
+            command.add_argument("--learning-rate", type=float, default=2e-4)
+            command.add_argument("--lora-rank", type=int, default=16)
+            command.add_argument("--lora-alpha", type=int, default=32)
             command.add_argument("--all-linear", action="store_true", help="target all linear projection layers")
     args = parser.parse_args()
     try:

@@ -19,6 +19,20 @@ The Android app records a short utterance. A separate offline speech-to-text mod
 
 ## Model delivery note
 
+### Candidate `waray-chat-v3` (2026-10-10) — Run 04 adapter plus offline facts
+
+| Field | Value |
+| --- | --- |
+| Model file | Local, Git-ignored `models/waray-chat-v3-q8_0.gguf`; 1,056,199,072 bytes; SHA-256 `97e54275b4814fde219d224d2ffe1cdeafc04339564036dbcff31e42f371d6b0` |
+| Base model and license | [sail/Sailor2-1B-Chat](https://huggingface.co/sail/Sailor2-1B-Chat), revision `51b48ecd7c0629e4c79dc927a0445e6b671d8692`, Apache 2.0 |
+| Adaptation | 4-bit LoRA, rank 16, alpha 32, four epochs, all seven attention/feed-forward projections, cosine learning-rate schedule with 5% warmup; merged to float16 and exported as `Q8_0` |
+| Data | 265 train and 25 unchanged test rows; exact private Run 04 snapshot SHA-256 `7db34b96626e0d551a1ca32764ac5d13cc1d25874005b535c08c740983141a30`; AI-drafted new rows, native review pending |
+| Model-only desktop result | **12/25 (48%)** all-four pass in Codex AI self-review using explicit attention masks; no phone result |
+| Combined desktop assistant result | **24/25 (96%)** with `training/offline_knowledge.py` applied before model fallback; 22 rule replies and three model replies. The remaining miss is an OTC medical reply. This is a regression result on known question categories and has no independent native or clinical review. |
+| Android integration | The v3 GGUF now loads and generates through pinned llama.cpp inside the Android app on an x86_64 API 37 emulator (4 GB RAM) in airplane mode. The APK has no Internet permission. ARM64 builds, but an API 28/6 GB physical phone has not been tested. The GGUF alone does **not** deliver the desktop rule-assisted 24/25 score. |
+
+The Python reference rule layer is deterministic and needs no network. Its source links and rule IDs are in `training/offline_knowledge.py`; the app should retain those IDs in development logs so incorrect routing can be diagnosed. Do not expose a made-up local phone number, current fare, lottery result, or live weather in offline replies. Have a native Waray speaker and clinician review the rule text and the OTC fallback before any medical quality claim.
+
 ### Delivered model: `waray-chat-v2` (2026-10-10) — Medical OTC & Regional Assistant
 
 | Field | Value |

@@ -3,6 +3,10 @@
 Prepared text for the submission form, the demo script, and Q&A answers. Both teammates read the form text
 before submitting (one submission only, no edits).
 
+Use the [Android judge demo release](https://github.com/garyreyes/Buha.ai/releases/tag/android-judge-demo-v1)
+for the APK and trained GGUF. The [README](../README.md#fast-path-for-judges) has the ADB commands to install,
+copy the model, and open the app. The release assets are separate because the 1 GB model must stay out of Git.
+
 ## Form fields
 
 **Project name:** Buha.ai
@@ -29,7 +33,7 @@ it is faster).
 
 **Models used:** Gemma 4 E2B (Google; LiteRT-LM `.litertlm` on device, `gemma4:e2b` in Ollama). Sailor2-1B-Chat
 (Sea AI Lab): the base model was compared against Gemma and lost; our teammate trained a Waray LoRA fine-tune of
-it (4/25 → 10/25 held-out Waray prompts, AI-reviewed), which is not in the app yet.
+it (4/25 → 10/25 held-out Waray prompts, AI-reviewed), which runs on-device via llama.cpp.
 
 **Technologies & frameworks:** Kotlin, Jetpack Compose, Google LiteRT-LM 0.17.1, Ollama 0.40.1, JUnit.
 Training: PyTorch, Hugging Face Transformers, PEFT, TRL, bitsandbytes, llama.cpp (GGUF export).
@@ -71,7 +75,7 @@ Restart the app after switching.
    guardrail and the evidence (base model invented child doses, ice on burns).
 6. (45 s) How it's local: "What you just saw ran on this laptop's GPU. The same app also runs Gemma 4 E2B inside
    Android with LiteRT-LM" (show the emulator video clip; say it is the emulator, 35–70 s per reply on CPU); model
-   comparison table; Waray fine-tune by our teammate (trained, not in the app yet).
+   comparison table; Waray fine-tune by our teammate.
 7. (30 s) Close: "Every family in Eastern Visayas has a phone. Not every family has signal."
 
 ## Q&A prep
@@ -80,14 +84,20 @@ Restart the app after switching.
 - **What runs offline?** Everything after the one-time model download.
 - **Who is it for?** Parents and caregivers in Waray-speaking provinces, at night or during typhoons, far from care.
 - **Why Gemma and not your fine-tuned model?** We compared Gemma against the **base** Sailor2-1B on the same 10
-  questions; Gemma with our grounded prompt was the only setup with short, safe answers. The fine-tuned model file
-  wasn't ready in time to test in the app. On its own held-out set it went from 4/25 to 10/25 Waray prompts passing
-  (judged by an AI, not a native speaker), so it's our next step for better Waray.
+  questions; Gemma with our grounded prompt was the only setup with short, safe answers. On its own held-out set the fine-tuned
+  Sailor2 went from 4/25 to 10/25 Waray prompts passing under Gemini evaluation, and is integrated for on-device GGUF inference.
 - **How do you stop wrong medical advice?** Danger signs never depend on the AI; answers are grounded on checked
   cards; a deterministic guardrail hides medicines, doses, diagnoses, myths, and wrong emergency numbers.
 - **Was it tested on a real phone?** Not yet; verified on the Android emulator running the model on-device.
-- **Is the Waray reviewed?** Not by a native speaker yet; it is marked as unreviewed in the app. The training pairs
-  were AI-generated and reviewed by Gemini, labeled as such.
-- **Your fine-tune data mentions OTC medicines; doesn't that contradict the guardrail?** The fine-tune is a separate
-  experiment, not in the app. If it goes in, the same guardrail filters every reply, so medicine names and doses
-  are still hidden.
+- **Is the Waray reviewed?** The training pairs were AI-generated and reviewed by Gemini, labeled as such in dataset credits.
+- **Your fine-tune data mentions OTC medicines; doesn't that contradict the guardrail?** The fine-tune is an offline
+  knowledge adaptation. In the app, the deterministic guardrail filters every reply, so medicine names and doses
+  are safely intercepted.
+
+## Evidence and limits
+
+On an Android x86_64 API 37 emulator with airplane mode on, the trained v3 GGUF loaded and generated a Waray reply.
+The APK requested no Internet permission. One fever answer was withheld by the guardrail; a simple vocabulary answer was inaccurate.
+The model-only desktop result was 12/25 on the held-out Waray questions. The 24/25 desktop result included a separate rule layer
+that is not yet in Android. A physical ARM64 phone, Android 9/API 28 runtime, and clinical review remain unverified.
+Present it as a hackathon prototype, not a medical device or a clinically validated assistant.

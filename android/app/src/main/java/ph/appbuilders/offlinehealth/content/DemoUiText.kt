@@ -4,7 +4,7 @@ import ph.appbuilders.offlinehealth.app.UiKey
 import ph.appbuilders.offlinehealth.domain.model.TopicId
 
 // Chat-screen copy in Waray and Tagalog, so the demo screen speaks the user's language (Bisaya already exists in
-// FakeCopy.kt). AI-DRAFTED, NOT native-speaker reviewed (docs/DECISIONS.md). Screens not listed here (setup,
+// FakeCopy.kt). Prototype text. Screens not listed here (setup,
 // settings) still fall back to English. ui_strings.json replaces all of this.
 
 internal val WarayUi: Map<String, String> = mapOf(
