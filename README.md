@@ -40,7 +40,7 @@ message ──► triage (keywords) ──► danger banner + topic card      (i
 ### Fast path for judges
 
 Download `OfflineHealth-debug.apk` and `waray-chat-v3-q8_0.gguf` from the
-[Android judge demo release](https://github.com/garyreyes/Buha.ai/releases/tag/android-judge-demo-v1).
+[Android judge demo release](https://github.com/garyreyes/Buha.ai/releases/tag/android-judge-demo-v1) or download the model directly from [Google Drive](https://drive.google.com/file/d/1fRTNdmZqy1dSIY1vnGZHeTxD_oViEuPE/view?usp=sharing).
 With an Android phone or emulator connected through ADB, run these commands from the download folder:
 
 ```powershell
