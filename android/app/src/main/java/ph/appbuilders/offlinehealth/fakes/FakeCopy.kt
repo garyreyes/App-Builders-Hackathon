@@ -69,7 +69,7 @@ private val EnglishScreensUi: Map<String, String> = mapOf(
     UiKey.SETTINGS_ABOUT_DESC to "Not a doctor. What this app can do.",
     UiKey.SETTINGS_SOURCES to "Sources",
     UiKey.SETTINGS_SOURCES_DESC to "DOH and WHO guidance",
-    UiKey.SETTINGS_VERSION to "Buha.ai · Version {version}",
+    UiKey.SETTINGS_VERSION to "Buh.ai · Version {version}",
 )
 
 internal val EnglishUi: Map<String, String> = mapOf(

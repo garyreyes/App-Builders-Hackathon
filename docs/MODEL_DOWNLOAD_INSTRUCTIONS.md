@@ -28,7 +28,7 @@ models/waray-chat-v3-q8_0.gguf
 Judges and evaluators can download the model file directly from:
 
 * **Google Drive:** [Download waray-chat-v3-q8_0.gguf](https://drive.google.com/file/d/1fRTNdmZqy1dSIY1vnGZHeTxD_oViEuPE/view?usp=sharing)
-* **GitHub Release:** [Android judge demo release](https://github.com/garyreyes/Buha.ai/releases/tag/android-judge-demo-v1)
+* **GitHub Release:** [Android judge demo release](https://github.com/garyreyes/Buh.ai/releases/tag/android-judge-demo-v1)
 
 After downloading, follow the steps below to push the file to the device.
 
