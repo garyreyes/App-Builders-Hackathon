@@ -29,7 +29,7 @@ the AI model: our Waray-trained Sailor2-1B (GGUF, llama.cpp) on the Android devi
 as an optional on-device fallback. Verified on the Android emulator in airplane mode, not yet on a physical phone.
 An optional laptop mode runs a model in Ollama on a local laptop, also offline.
 
-**What requires internet:** only downloading the model file once before first use.
+**What requires internet:** only downloading the model file once before first use (GitHub Releases or Google Drive).
 
 **Models used:** Sailor2-1B-Chat (Sea AI Lab) with our Waray LoRA fine-tune (v3, Q8_0 GGUF), the default
 on-device model; trained locally on an RTX 4050; scored by Gemini on 25 held-out Waray prompts, not by a native
@@ -45,8 +45,11 @@ an RTX 4050 laptop GPU. During development only: the AI coding tools below, Goog
 review the AI-generated Waray training pairs, and Hugging Face Hub to download models and the dataset.
 
 **Existing code & assets:** open-source libraries above; first-aid guidance based on DOH/WHO materials; Hugging Face
-dataset `ruslanmv/ai-medical-chatbot` used only in a separate training experiment (credited in docs/DATASET_CREDITS.md). All app code
-was written during the hackathon (see commit history).
+dataset `ruslanmv/ai-medical-chatbot` used only in a separate training experiment (credited in docs/DATASET_CREDITS.md).
+llama.cpp (MIT, ggml authors) as a git submodule at `android/third_party/llama.cpp`, and the `android/llama-runtime`
+module adapted from llama.cpp's Android example (`com.arm.aichat`, license in `android/llama-runtime/LLAMA_LICENSE`).
+Atkinson Hyperlegible Next font (Braille Institute, SIL Open Font License). Model files are hosted on GitHub
+Releases and Google Drive for download. All other app code was written during the hackathon (see commit history).
 
 **AI development tools:** Claude Code (Anthropic) for the Android app; OpenAI Codex and Google Antigravity for the
 training scripts (docs/ANTIGRAVITY_HANDOFF.md).
