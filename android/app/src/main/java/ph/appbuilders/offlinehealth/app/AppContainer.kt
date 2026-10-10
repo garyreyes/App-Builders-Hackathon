@@ -6,7 +6,6 @@ import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import ph.appbuilders.offlinehealth.BuildConfig
 import ph.appbuilders.offlinehealth.content.ContentSource
 import ph.appbuilders.offlinehealth.content.DemoContentSource
 import ph.appbuilders.offlinehealth.domain.model.SetupState
@@ -23,7 +22,7 @@ import ph.appbuilders.offlinehealth.lib.llm.HealthPrompt
 import ph.appbuilders.offlinehealth.lib.llm.LiteRtClient
 import ph.appbuilders.offlinehealth.lib.llm.LlmChatService
 import ph.appbuilders.offlinehealth.lib.llm.LlmClient
-import ph.appbuilders.offlinehealth.lib.llm.OllamaClient
+import ph.appbuilders.offlinehealth.lib.llm.SailorGgufClient
 import ph.appbuilders.offlinehealth.lib.settings.LanguageSettings
 
 /**
@@ -31,8 +30,8 @@ import ph.appbuilders.offlinehealth.lib.settings.LanguageSettings
  * here and only here (frontend brief §3). Nothing else in the UI knows which implementation it has.
  *
  * Where the AI runs, first match wins:
- * 1. ON THE PHONE: the Gemma 4 E2B file is in the app's storage → LiteRT-LM, fully offline (any build).
- * 2. Debug builds: the laptop's Ollama over USB/wireless adb (BuildConfig.USE_OLLAMA, see ollama/README.md).
+ * 1. The trained Sailor2 GGUF in app storage runs through llama.cpp on this Android device.
+ * 2. The optional Gemma LiteRT model also runs on this Android device.
  * 3. Otherwise the fakes.
  */
 class AppContainer(context: Context) {
@@ -49,19 +48,20 @@ class AppContainer(context: Context) {
     private val instantResult = InstantResult(demoContent)
 
     private val phoneModel = File(context.getExternalFilesDir(null), PHONE_MODEL_FILE)
+    private val sailorModel = File(context.getExternalFilesDir(null), SAILOR_MODEL_FILE)
 
     /** Which AI the app is using, for the debug menu and the demo ("on this phone" vs "laptop"). */
     val aiSource: String =
         when {
+            sailorModel.isFile -> "on this phone (trained Sailor2 Waray, llama.cpp)"
             phoneModel.isFile -> "on this phone (Gemma 4 E2B, LiteRT-LM)"
-            BuildConfig.USE_OLLAMA -> "laptop via Ollama"
             else -> "none (fakes)"
         }
 
     private val llmClient: LlmClient? =
         when {
+            sailorModel.isFile -> SailorGgufClient(context, sailorModel)
             phoneModel.isFile -> LiteRtClient(phoneModel, context.cacheDir.path)
-            BuildConfig.USE_OLLAMA -> OllamaClient(BuildConfig.OLLAMA_URL, BuildConfig.OLLAMA_MODEL)
             else -> null
         }
 
@@ -80,7 +80,7 @@ class AppContainer(context: Context) {
     private val fakeChat = FakeChatService(FakeTriage(content), appScope)
     val chatService: ChatService = ollamaChat ?: fakeChat
 
-    // With a real model (phone file or Ollama) setup starts Done: no fake download on stage.
+    // With a model already on the device, setup starts Done: no fake download on stage.
     private val fakeSetup = FakeModelSetupService(
         scope = appScope,
         onModelReady = { ollamaChat?.warmUp() ?: fakeChat.onModelReady() },
@@ -121,5 +121,6 @@ class AppContainer(context: Context) {
     private companion object {
         /** Side-loaded with adb into /sdcard/Android/data/ph.appbuilders.offlinehealth/files/ (ollama/README.md). */
         const val PHONE_MODEL_FILE = "gemma-4-E2B-it.litertlm"
+        const val SAILOR_MODEL_FILE = "waray-chat-v3-q8_0.gguf"
     }
 }

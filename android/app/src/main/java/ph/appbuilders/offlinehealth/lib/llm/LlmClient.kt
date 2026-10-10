@@ -6,8 +6,7 @@ import kotlinx.coroutines.flow.Flow
 data class Exchange(val user: String, val assistant: String)
 
 /**
- * The one way the app talks to a language model. Today: Ollama on the laptop ([OllamaClient], debug builds).
- * Later: llama.cpp on the phone, behind the same interface.
+ * The one way the app talks to a language model. The trained Sailor2 GGUF runs on Android through llama.cpp.
  */
 interface LlmClient {
     /** Loads the model so the first reply isn't slow. True if the model is reachable and loaded. */

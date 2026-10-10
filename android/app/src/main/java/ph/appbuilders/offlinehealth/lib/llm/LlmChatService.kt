@@ -24,7 +24,7 @@ import ph.appbuilders.offlinehealth.features.chat.ChatService
  * check and topic card from [triage] alongside it. Every piece of reply text passes [Guardrail] before it is
  * emitted; the first failure hides the whole reply. Follow-ups see the last [HISTORY_TURNS] answered exchanges.
  * [prompt] builds each request's system prompt from the instant result (its checked card) and the user's language;
- * null keeps the Modelfile's own. Sampling lives in ollama/Modelfile.
+ * null uses the client's default system prompt.
  */
 class LlmChatService(
     private val client: LlmClient,
@@ -67,7 +67,7 @@ class LlmChatService(
 
     override fun send(text: String, language: Language): Flow<ChatResult> = flow {
         val base = triage(text, language)
-        if (status.value == AiStatus.BASIC && !basicByChoice) warmUp() // the laptop may be back
+        if (status.value == AiStatus.BASIC && !basicByChoice) warmUp()
         emit(base.copy(ai = firstAiState()))
         if (status.first { it != AiStatus.STARTING } == AiStatus.BASIC) {
             emit(base.copy(ai = AiReplyState.BasicMode))

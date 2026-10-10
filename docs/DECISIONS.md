@@ -135,3 +135,10 @@ measurements or Waray speaker evaluation contradict it, and record the changed e
   "5 minutes" instead of 20 for cooling a burn (the card below has the right step). The guardrail also now blocks
   known first-aid myths and non-911 emergency numbers. The trained Sailor2 can be swapped in (`Modelfile.sailor2`)
   and must beat Gemma on the same 10 questions to replace it.
+
+- **Decision 7, trained Sailor2 inside Android (Oct 10):** the owner requires the trained v3 GGUF to run on the device,
+  fully offline. The app now prefers `waray-chat-v3-q8_0.gguf` in its external files directory and runs it through a
+  pinned llama.cpp JNI module; Gemma LiteRT remains an on-device fallback. Debug and release APKs have no Internet
+  permission and no Ollama inference path. On an x86_64 API 37 emulator with airplane mode on, v3 loaded and generated
+  a Waray reply; a fever response was withheld by the existing guardrail, and a lexical response was inaccurate.
+  Native-speaker and clinician review, ARM64 physical phone performance, and API 28 behavior remain unverified.
