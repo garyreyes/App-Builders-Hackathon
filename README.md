@@ -1,4 +1,4 @@
-# Buha.ai
+# Buh.ai
 
 **An AI first-aid helper that runs on-device on Android, in Waray, Bisaya, Tagalog, and English.**
 (Verified on the Android emulator; not yet tested on a physical phone. See [Honest status](#honest-status).)
@@ -40,7 +40,7 @@ message ──► triage (keywords) ──► danger banner + topic card      (i
 ### Fast path for judges
 
 Download `OfflineHealth-debug.apk` and `waray-chat-v3-q8_0.gguf` from the
-[Android judge demo release](https://github.com/garyreyes/Buha.ai/releases/tag/android-judge-demo-v1).
+[Android judge demo release](https://github.com/garyreyes/Buh.ai/releases/tag/android-judge-demo-v1).
 With an Android phone or emulator connected through ADB, run these commands from the download folder:
 
 ```powershell
@@ -119,6 +119,8 @@ an emergency-number question), temperature 0:
 | **Gemma 4 E2B + our prompt + checked card** | **Short, safe, follows the card, no medicine, 911** (Waray weaker) |
 | Qwen3 4B + our prompt + card | Leaked its reasoning into the reply, ~10 s |
 
+After this test, our Waray-trained Sailor2 (v3 GGUF) became the default for better Waray, with Gemma as the
+fallback. The trained model has not been run through these 10 questions.
 Details: [docs/PROJECT_FACTS.md](docs/PROJECT_FACTS.md) and [docs/DECISIONS.md](docs/DECISIONS.md).
 
 ## Honest status
